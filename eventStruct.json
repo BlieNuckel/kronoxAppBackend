@@ -1,0 +1,177 @@
+{
+    "2022": {
+        "March": {
+            "1": [
+                {
+                    "start": "20",
+                    "end": "20",
+                    "title": "string",
+                    "description": "string",
+                    "lecturer": "string",
+                    "location": "string",
+                    "course": "string"
+                },
+                {
+                    "start": "20",
+                    "end": "20",
+                    "title": "string",
+                    "description": "string",
+                    "lecturer": "string",
+                    "location": "string",
+                    "course": "string"
+                },
+                {
+                    "start": "20",
+                    "end": "20",
+                    "title": "string",
+                    "description": "string",
+                    "lecturer": "string",
+                    "location": "string",
+                    "course": "string"
+                }
+            ],
+            "2": [
+                {
+                    "start": "20",
+                    "end": "20",
+                    "title": "string",
+                    "description": "string",
+                    "lecturer": "string",
+                    "location": "string",
+                    "course": "string"
+                }
+            ]
+        },
+        "month2": {
+            "day1": [
+                {
+                    "start": "20",
+                    "end": "20",
+                    "title": "string",
+                    "description": "string",
+                    "lecturer": "string",
+                    "location": "string",
+                    "course": "string"
+                },
+                {
+                    "start": "20",
+                    "end": "20",
+                    "title": "string",
+                    "description": "string",
+                    "lecturer": "string",
+                    "location": "string",
+                    "course": "string"
+                },
+                {
+                    "start": "20",
+                    "end": "20",
+                    "title": "string",
+                    "description": "string",
+                    "lecturer": "string",
+                    "location": "string",
+                    "course": "string"
+                }
+            ],
+
+            "day2": [
+                {
+                    "start": "20",
+                    "end": "20",
+                    "title": "string",
+                    "description": "string",
+                    "lecturer": "string",
+                    "location": "string",
+                    "course": "string"
+                }
+            ]
+        }
+    },
+    "2023": {
+        "month1": {
+            "day1": [
+                {
+                    "start": "20",
+                    "end": "20",
+                    "title": "string",
+                    "description": "string",
+                    "lecturer": "string",
+                    "location": "string",
+                    "course": "string"
+                },
+                {
+                    "start": "20",
+                    "end": "20",
+                    "title": "string",
+                    "description": "string",
+                    "lecturer": "string",
+                    "location": "string",
+                    "course": "string"
+                },
+                {
+                    "start": "20",
+                    "end": "20",
+                    "title": "string",
+                    "description": "string",
+                    "lecturer": "string",
+                    "location": "string",
+                    "course": "string"
+                }
+            ],
+
+            "day2": [
+                {
+                    "start": "20",
+                    "end": "20",
+                    "title": "string",
+                    "description": "string",
+                    "lecturer": "string",
+                    "location": "string",
+                    "course": "string"
+                }
+            ]
+        },
+        "month2": {
+            "day1": [
+                {
+                    "start": "20",
+                    "end": "20",
+                    "title": "string",
+                    "description": "string",
+                    "lecturer": "string",
+                    "location": "string",
+                    "course": "string"
+                },
+                {
+                    "start": "20",
+                    "end": "20",
+                    "title": "string",
+                    "description": "string",
+                    "lecturer": "string",
+                    "location": "string",
+                    "course": "string"
+                },
+                {
+                    "start": "20",
+                    "end": "20",
+                    "title": "string",
+                    "description": "string",
+                    "lecturer": "string",
+                    "location": "string",
+                    "course": "string"
+                }
+            ],
+
+            "day2": [
+                {
+                    "start": "20",
+                    "end": "20",
+                    "title": "string",
+                    "description": "string",
+                    "lecturer": "string",
+                    "location": "string",
+                    "course": "string"
+                }
+            ]
+        }
+    }
+}
