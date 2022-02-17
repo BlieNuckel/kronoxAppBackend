@@ -12,10 +12,17 @@ def main():
         idList = json.load(f)
 
     for id in idList:
-        fetchIcsFile(id)
+        cacheIcs(id)
 
 
-def fetchIcsFile(id):
+def cacheIcs(id):
+    icsString: str = __fetchIcsFile(id)
+    icsList: List[str] = __parseIcs(icsString)
+    icsJson: str = __listToJson(id, icsList)
+    __saveToCache(icsJson)
+
+
+def __fetchIcsFile(id) -> str:
     kronoxURL = "https://kronox.hkr.se/setup/jsp/Schema.jsp?startDatum=idag&intervallTyp=m&intervallAntal=6&sprak=EN&sokMedAND=true&forklaringar=true&resurser="  # noqa: E501
     schemaURL = "https://schema.hkr.se/setup/jsp/Schema.jsp?startDatum=idag&intervallTyp=m&intervallAntal=6&sprak=EN&sokMedAND=true&forklaringar=true&resurser="  # noqa: E501
     http = urllib3.PoolManager()
@@ -32,7 +39,7 @@ def fetchIcsFile(id):
     return res.data
 
 
-def parse_ics(ics: str) -> List[str]:
+def __parseIcs(ics: str) -> List[str]:
     events = []
     ical = Calendar.from_ical(ics)
     for i, component in enumerate(ical.walk()):
@@ -64,3 +71,13 @@ def parse_ics(ics: str) -> List[str]:
             events.append(event)
 
     return events
+
+
+def __listToJson(events: List) -> str:
+    pass
+
+
+def __saveToCache(id: str, data: str) -> None:
+    filePath = "cache/" + id + ".json"
+    with open(filePath, "w") as f:
+        f.write(data)
