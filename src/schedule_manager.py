@@ -1,4 +1,4 @@
-class EventManager:
+class ScheduleManager:
     def __init__(self) -> None:
         pass
 
