@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from schedule_manager import ScheduleManager
+from .schedule_manager import ScheduleManager
 
 app = FastAPI()
 
