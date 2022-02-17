@@ -1,6 +1,6 @@
 import json
 from typing import Dict, List
-import ics_service
+from . import ics_service
 import re
 
 PATTERN1 = re.compile("\s+")  # noqa W605
