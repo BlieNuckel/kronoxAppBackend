@@ -26,7 +26,6 @@ def cacheIcs(id):
     icsString: str = __fetchIcsFile(id)
     icsList: List[str] = __parseIcs(icsString)
     icsJson: str = __listToJson(icsList)
-    print(icsJson)
     __saveToCache(id, icsJson)
 
 
