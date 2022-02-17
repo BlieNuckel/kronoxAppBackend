@@ -22,6 +22,9 @@ class ScheduleManager:
                 jsonObj = json.load(icsFile)
         except FileNotFoundError:
             ics_service.cacheIcs(id)
+            cachePath = "cache/" + id + ".json"
+            with open(cachePath) as icsFile:
+                jsonObj = json.load(icsFile)
 
         return jsonObj
 
