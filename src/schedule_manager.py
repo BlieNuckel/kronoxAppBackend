@@ -36,8 +36,8 @@ class ScheduleManager:
 
     @property
     def scheduleDict(self) -> Dict:
-        return self.__json
+        return self.__scheduleDict
 
     @scheduleDict.setter
     def scheduleDict(self, data: Dict):
-        self.__json = data
+        self.__scheduleDict = data
