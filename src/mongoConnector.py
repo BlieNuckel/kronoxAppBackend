@@ -4,9 +4,14 @@ from pymongo.cursor import Cursor
 import certifi
 import os
 
-USERNAME = os.environ["mongoUser"]
-PASSWORD = os.environ["mongoPass"]
-CONNECTION_STRING = os.environ["mongoURI"]
+if os.path.exists(".env"):
+    from dotenv import load_dotenv
+
+    load_dotenv()
+
+USERNAME = os.environ.get("mongoUser")
+PASSWORD = os.environ.get("mongoPass")
+CONNECTION_STRING = os.environ.get("mongoURI")
 
 CONNECTION_STRING = CONNECTION_STRING.replace("<user>", USERNAME)
 CONNECTION_STRING = CONNECTION_STRING.replace("<password>", PASSWORD)
