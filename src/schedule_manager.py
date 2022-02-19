@@ -1,8 +1,10 @@
 from typing import Dict, List
 import re
+from dateutil import parser as dateParser
+import datetime
 
 from src import ics_service
-from src.mongoConnector import MongoConnector
+from src.mongo_connector import MongoConnector
 
 PATTERN1 = re.compile("\s+")  # noqa W605
 PATTERN2 = re.compile(",+")
@@ -17,20 +19,24 @@ class ScheduleManager:
         self.scheduleDict = self.getIcs(id)
 
     def getIcs(self, id: str) -> Dict:
-        mongoConnection = MongoConnector()
-        schedulesCollection = mongoConnection.getCollection("schedules")
+        schedulesCollection = MongoConnector.getCollection("schedules")
 
         for schedule in schedulesCollection:
             if id == schedule["_id"]:
+                cacheTime = dateParser.parse(schedule["cachedAt"])
+                currentTime = datetime.datetime.now()
+                timeDiff = currentTime - cacheTime
+                if timeDiff.total_seconds() > 86400:
+                    return ics_service.cacheIcs(id, True)
                 return schedule
 
         return ics_service.cacheIcs(id, True)
 
     def getFilteredSchedule(
         self,
-        years: str | list[str] | None,
-        months: str | list[str] | None,
-        days: str | list[str] | None,
+        years: list[str] | None,
+        months: list[str] | None,
+        days: list[str] | None,
     ) -> Dict:
         filtered: Dict = {}
 
@@ -54,78 +60,58 @@ class ScheduleManager:
                     "November",
                     "December",
                 ]
-            for month in monthsList:
-                filtered[month] = {}
-                for day in daysList:
-                    try:
-                        filtered[month][day] = self.scheduleDict[
-                            list(self.scheduleDict.keys())[1]
-                        ][month][day]
-                    except KeyError:
-                        pass
-                if filtered[month] == {}:
-                    filtered.pop(month)
+            for year in self.scheduleDict.keys():
+                for month in monthsList:
+                    filtered[month.lower()] = {}
+                    for day in daysList:
+                        try:
+                            filtered[month.lower()][
+                                day.lower()
+                            ] = self.scheduleDict[year.lower()][month.lower()][
+                                day.lower()
+                            ]
+                        except KeyError:
+                            pass
         else:
+            if len(monthsList) == 0:
+                monthsList = [
+                    "January",
+                    "February",
+                    "March",
+                    "April",
+                    "May",
+                    "June",
+                    "July",
+                    "August",
+                    "September",
+                    "October",
+                    "November",
+                    "December",
+                ]
             for year in yearsList:
-                filtered[year] = {}
+                filtered[year.lower()] = {}
                 if year not in self.scheduleDict.keys():
                     continue
                 for month in monthsList:
-                    filtered[year][month] = {}
+                    filtered[year.lower()][month.lower()] = {}
                     for day in daysList:
                         try:
-                            filtered[year][month][day] = self.scheduleDict[
-                                year
-                            ][month][day]
+                            filtered[year.lower()][month.lower()][
+                                day.lower()
+                            ] = self.scheduleDict[year.lower()][month.lower()][
+                                day.lower()
+                            ]
                         except KeyError:
                             pass
-                    if filtered[year][month] == {}:
-                        filtered[year].pop(month)
 
         return filtered
 
-        # if years == "*":
-        #     yearsList = list(self.scheduleDict.keys())
-        # elif type(years) == str:
-        #     yearsList = [years]
-        # elif type(years) == list:
-        #     yearsList = years
-        # else:
-        #     yearsList = []
-
-        # for year in yearsList:
-        #     filtered[year] = {}
-
-        # if months == "*":
-        #     if len(filtered.keys()) > 0:
-        #         for year in filtered.keys():
-        #             monthsList = list(self.scheduleDict[year].keys())
-        #             for month in monthsList:
-        #                 filtered[year][month] = {}
-        #     else:
-        #         for year in self.scheduleDict.keys():
-        #             monthsList = list(self.scheduleDict[year].keys())
-        #             filtered["months"] = []
-        #             for month in monthsList:
-        #                 filtered["months"].append(dict())
-        # elif type(months) == str:
-        #     if len(filtered.keys()) > 0:
-        #         for year in filtered.keys():
-        #             filtered[year][months] = {}
-        #     else:
-        #         filtered["months"] = []
-        #         for year in self.scheduleDict.keys():
-        #             filtered["months"].append(dict())
-        # elif type(months) == list:
-        #     if len(filtered.keys()) > 0:
-        #         for year in filtered.keys():
-
     def __generateFilterLists(
         self,
-        years: str | list[str] | None,
-        months: str | list[str] | None,
-        days: str | list[str] | None,
-    ) -> tuple[list, list, list]:
+        years: list[str] | None,
+        months: list[str] | None,
+        days: list[str] | None,
+    ) -> tuple[list[str], list[str], list[str]]:
         try:
             if years[0] == "*":
                 yearsList = list(self.scheduleDict.keys())
@@ -133,6 +119,7 @@ class ScheduleManager:
                 yearsList = years
         except TypeError:
             yearsList = []
+
         try:
             if months[0] == "*":
                 monthsList = [

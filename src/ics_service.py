@@ -1,21 +1,14 @@
 from enum import Enum
+import time
 from typing import Dict, List, Tuple
 import urllib3
 import urllib3.exceptions as url_except
 import datetime as dt  # noqa # pylint: disable=unused-import
 from icalendar import Calendar
 import re
-import dateutil.parser as dateParse
+import dateutil.parser as dateParser
 
-from src.mongoConnector import MongoConnector
-
-
-def main():
-    connection = MongoConnector()
-    idList = connection.getCollection("schedule_ids")[0]["schedule_ids"]
-
-    for id in idList:
-        cacheIcs(id)
+from src.mongo_connector import MongoConnector
 
 
 def cacheIcs(id, returnDict: bool = False):
@@ -85,31 +78,31 @@ def __listToJson(events: List) -> Dict:
     eventsDict = {}
 
     for event in events:
-        eventDate = dateParse.isoparse(event["start"])
+        eventDate = dateParser.isoparse(event["start"])
 
         if str(eventDate.year) not in eventsDict.keys():
-            eventsDict[str(eventDate.year)] = {}
+            eventsDict[str(eventDate.year).lower()] = {}
 
-        yearDict: Dict = eventsDict[str(eventDate.year)]
+        yearDict: Dict = eventsDict[str(eventDate.year).lower()]
 
         if months(eventDate.month).name not in yearDict.keys():
-            yearDict[months(eventDate.month).name] = {}
+            yearDict[months(eventDate.month).name.lower()] = {}
 
-        monthDict: Dict = yearDict[months(eventDate.month).name]
+        monthDict: Dict = yearDict[months(eventDate.month).name.lower()]
 
         if str(eventDate.day) not in monthDict.keys():
-            monthDict[str(eventDate.day)] = []
+            monthDict[str(eventDate.day).lower()] = []
 
-        monthDict[str(eventDate.day)].append(event)
+        monthDict[str(eventDate.day).lower()].append(event)
 
     return eventsDict
 
 
 def __saveToCache(id: str, data: Dict) -> None:
     data["_id"] = id
+    data["cachedAt"] = time.ctime()
 
-    mongoConnection = MongoConnector()
-    mongoConnection.addOne("schedules", data)
+    MongoConnector.updateOne("schedules", {"_id": id}, data, True)
 
 
 class months(Enum):
@@ -125,7 +118,3 @@ class months(Enum):
     October = 10
     November = 11
     December = 12
-
-
-if __name__ == "__main__":
-    main()
