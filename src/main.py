@@ -24,9 +24,6 @@ async def scheduleQuery(
     day: list[str] | None = Query(None),
 ):
     schedule = ScheduleManager(id)
-    print("year: " + str(year))
-    print("month:" + str(month))
-    print("day:" + str(day))
 
     if not year and not month and not day:
         return schedule.scheduleDict

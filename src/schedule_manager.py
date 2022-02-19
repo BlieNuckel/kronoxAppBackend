@@ -61,6 +61,8 @@ class ScheduleManager:
                     "December",
                 ]
             for year in self.scheduleDict.keys():
+                if year == "_id" or year == "cachedAt":
+                    continue
                 for month in monthsList:
                     filtered[month.lower()] = {}
                     for day in daysList:
