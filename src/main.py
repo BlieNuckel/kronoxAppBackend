@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Query
 
 from src.schedule_manager import ScheduleManager
 
@@ -14,3 +14,21 @@ async def root1():
 async def scheduleGetter(id: str):
     schedule = ScheduleManager(id)
     return schedule.scheduleDict
+
+
+@app.get("/schedules/{id}")
+async def scheduleQuery(
+    id: str,
+    year: list[str] | None = Query(None),
+    month: list[str] | None = Query(None),
+    day: list[str] | None = Query(None),
+):
+    schedule = ScheduleManager(id)
+    print("year: " + str(year))
+    print("month:" + str(month))
+    print("day:" + str(day))
+
+    if not year and not month and not day:
+        return schedule.scheduleDict
+    else:
+        return schedule.getFilteredSchedule(year, month, day)
