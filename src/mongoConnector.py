@@ -2,10 +2,11 @@ from typing import Dict, List
 from pymongo import MongoClient
 from pymongo.cursor import Cursor
 import certifi
+import os
 
-USERNAME = "root"
-PASSWORD = "iZXS0zMRtgjG3UVX"
-CONNECTION_STRING = "mongodb+srv://<user>:<password>@cluster0.pfzdf.mongodb.net/schedules?retryWrites=true&w=majority"  # noqa E501
+USERNAME = os.environ["mongoUser"]
+PASSWORD = os.environ["mongoPass"]
+CONNECTION_STRING = os.environ["mongoURI"]
 
 CONNECTION_STRING = CONNECTION_STRING.replace("<user>", USERNAME)
 CONNECTION_STRING = CONNECTION_STRING.replace("<password>", PASSWORD)
