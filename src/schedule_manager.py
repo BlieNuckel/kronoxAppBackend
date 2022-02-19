@@ -1,7 +1,8 @@
-import json
 from typing import Dict, List
-from . import ics_service
 import re
+
+from src import ics_service
+from src.mongoConnector import MongoConnector
 
 PATTERN1 = re.compile("\s+")  # noqa W605
 PATTERN2 = re.compile(",+")
@@ -10,23 +11,20 @@ PATTERN3 = re.compile(r"(?:(?<=\s)|^)(?:[a-z]|\d+)", re.I)
 
 class ScheduleManager:
     __events: List = []
-    __json: Dict = {}
+    __scheduleDict: Dict = {}
 
     def __init__(self, id: str) -> None:
-        self.json = self.getIcs(id)
+        self.scheduleDict = self.getIcs(id)
 
-    def getIcs(self, id: str) -> str:
-        try:
-            cachePath = "cache/" + id + ".json"
-            with open(cachePath) as icsFile:
-                jsonObj = json.load(icsFile)
-        except FileNotFoundError:
-            ics_service.cacheIcs(id)
-            cachePath = "cache/" + id + ".json"
-            with open(cachePath) as icsFile:
-                jsonObj = json.load(icsFile)
+    def getIcs(self, id: str) -> Dict:
+        mongoConnection = MongoConnector()
+        schedulesCollection = mongoConnection.getCollection("schedules")
 
-        return jsonObj
+        for schedule in schedulesCollection:
+            if id == schedule["_id"]:
+                return schedule
+
+        return ics_service.cacheIcs(id, True)
 
     @property
     def events(self) -> List:
@@ -37,9 +35,9 @@ class ScheduleManager:
         self.__events = events
 
     @property
-    def json(self) -> Dict:
+    def scheduleDict(self) -> Dict:
         return self.__json
 
-    @json.setter
-    def json(self, data: Dict):
+    @scheduleDict.setter
+    def scheduleDict(self, data: Dict):
         self.__json = data

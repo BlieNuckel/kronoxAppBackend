@@ -1,5 +1,4 @@
 from enum import Enum
-import json
 from typing import Dict, List, Tuple
 import urllib3
 import urllib3.exceptions as url_except
@@ -7,26 +6,25 @@ import datetime as dt  # noqa # pylint: disable=unused-import
 from icalendar import Calendar
 import re
 import dateutil.parser as dateParse
-import os
+
+from src.mongoConnector import MongoConnector
 
 
 def main():
-    idList: List[str] = []
-    with open("json/ids.json") as f:
-        idList = json.load(f)
+    connection = MongoConnector()
+    idList = connection.getCollection("schedule_ids")[0]["schedule_ids"]
 
     for id in idList:
         cacheIcs(id)
 
 
-def cacheIcs(id):
-    if not os.path.exists("cache"):
-        os.makedirs("cache")
-
+def cacheIcs(id, returnDict: bool = False):
     icsString: str = __fetchIcsFile(id)
     icsList: List[str] = __parseIcs(icsString)
-    icsJson: str = __listToJson(icsList)
-    __saveToCache(id, icsJson)
+    icsDict: Dict = __listToJson(icsList)
+    __saveToCache(id, icsDict)
+    if returnDict:
+        return icsDict
 
 
 def __fetchIcsFile(id) -> str:
@@ -83,7 +81,7 @@ def __titleSplitter(title: str) -> Tuple[str, str, str]:
     return (edit_name, split_name[1], split_name[2])
 
 
-def __listToJson(events: List) -> str:
+def __listToJson(events: List) -> Dict:
     eventsDict = {}
 
     for event in events:
@@ -104,13 +102,14 @@ def __listToJson(events: List) -> str:
 
         monthDict[str(eventDate.day)].append(event)
 
-    return json.dumps(eventsDict)
+    return eventsDict
 
 
-def __saveToCache(id: str, data: str) -> None:
-    filePath = "cache/" + id + ".json"
-    with open(filePath, "w") as f:
-        f.write(data)
+def __saveToCache(id: str, data: Dict) -> None:
+    data["_id"] = id
+
+    mongoConnection = MongoConnector()
+    mongoConnection.addOne("schedules", data)
 
 
 class months(Enum):

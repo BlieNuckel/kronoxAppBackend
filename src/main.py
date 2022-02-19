@@ -1,5 +1,6 @@
 from fastapi import FastAPI
-from .schedule_manager import ScheduleManager
+
+from src.schedule_manager import ScheduleManager
 
 app = FastAPI()
 
@@ -12,4 +13,4 @@ async def root1():
 @app.get("/schedule/{id}")
 async def scheduleGetter(id: str):
     schedule = ScheduleManager(id)
-    return schedule.json
+    return schedule.scheduleDict
