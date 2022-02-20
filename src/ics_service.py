@@ -11,11 +11,11 @@ import dateutil.parser as dateParser
 from src.mongo_connector import MongoConnector
 
 
-def cacheIcs(id, returnDict: bool = False):
+def cacheIcs(id, returnDict: bool = True):
     icsString: str = __fetchIcsFile(id)
-    icsList: List[str] = __parseIcs(icsString)
+    icsList: List[Dict] = __parseIcs(icsString)
     icsDict: Dict = __listToJson(icsList)
-    __saveToCache(id, icsDict)
+    # __saveToCache(id, icsDict)
     if returnDict:
         return icsDict
 
@@ -26,17 +26,21 @@ def __fetchIcsFile(id) -> str:
     http = urllib3.PoolManager()
 
     try:
-        res = http.request("GET", kronoxURL + id)
-    except url_except.TimeoutError or url_except.ConnectionError:
+        res = http.request("GET", schemaURL + id)
+        if res.data == "":
+            raise ValueError
+    except url_except.TimeoutError or url_except.ConnectionError or ValueError:
         try:
-            res = http.request("GET", schemaURL + id)
-        except url_except.TimeoutError or url_except.ConnectionError:
+            res = http.request("GET", kronoxURL + id)
+            if res.data == "":
+                raise ValueError
+        except url_except.TimeoutError or url_except.ConnectionError or ValueError:  # noqa W501
             pass
 
     return res.data
 
 
-def __parseIcs(ics: str) -> List[str]:
+def __parseIcs(ics: str) -> List[Dict]:
     events = []
     ical = Calendar.from_ical(ics)
     for i, component in enumerate(ical.walk()):
@@ -74,26 +78,28 @@ def __titleSplitter(title: str) -> Tuple[str, str, str]:
     return (edit_name, split_name[1], split_name[2])
 
 
-def __listToJson(events: List) -> Dict:
+def __listToJson(events: List[Dict]) -> Dict:
     eventsDict = {}
 
     for event in events:
         eventDate = dateParser.isoparse(event["start"])
 
         if str(eventDate.year) not in eventsDict.keys():
-            eventsDict[str(eventDate.year).lower()] = {}
+            eventsDict[str(eventDate.year)] = {}
 
-        yearDict: Dict = eventsDict[str(eventDate.year).lower()]
+        yearDict: Dict[str, Dict[str, List]] = eventsDict[str(eventDate.year)]
 
-        if months(eventDate.month).name not in yearDict.keys():
+        if months(eventDate.month).name.lower() not in yearDict.keys():
             yearDict[months(eventDate.month).name.lower()] = {}
 
-        monthDict: Dict = yearDict[months(eventDate.month).name.lower()]
+        monthDict: Dict[str, List] = yearDict[
+            months(eventDate.month).name.lower()
+        ]
 
         if str(eventDate.day) not in monthDict.keys():
-            monthDict[str(eventDate.day).lower()] = []
+            monthDict[str(eventDate.day)] = []
 
-        monthDict[str(eventDate.day).lower()].append(event)
+        monthDict[str(eventDate.day)].append(event)
 
     return eventsDict
 

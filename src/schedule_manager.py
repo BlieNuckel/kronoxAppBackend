@@ -27,10 +27,10 @@ class ScheduleManager:
                 currentTime = datetime.datetime.now()
                 timeDiff = currentTime - cacheTime
                 if timeDiff.total_seconds() > 86400:
-                    return ics_service.cacheIcs(id, True)
+                    return ics_service.cacheIcs(id)
                 return schedule
 
-        return ics_service.cacheIcs(id, True)
+        return ics_service.cacheIcs(id)
 
     def getFilteredSchedule(
         self,
