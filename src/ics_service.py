@@ -15,7 +15,7 @@ def cacheIcs(id, returnDict: bool = True):
     icsString: str = __fetchIcsFile(id)
     icsList: List[Dict] = __parseIcs(icsString)
     icsDict: Dict = __listToJson(icsList)
-    # __saveToCache(id, icsDict)
+    __saveToCache(id, icsDict)
     if returnDict:
         return icsDict
 
