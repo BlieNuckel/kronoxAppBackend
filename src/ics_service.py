@@ -97,7 +97,12 @@ def __listToJson(events: List[Dict]) -> Dict:
         ]
 
         if str(eventDate.day) not in monthDict.keys():
-            monthDict[str(eventDate.day)] = []
+            monthDict[str(eventDate.day)] = [
+                {
+                    "dayName": days(eventDate.weekday()).name,
+                    "date": f"{eventDate.day}/{eventDate.month}",
+                }
+            ]
 
         monthDict[str(eventDate.day)].append(event)
 
@@ -124,3 +129,13 @@ class months(Enum):
     October = 10
     November = 11
     December = 12
+
+
+class days(Enum):
+    MONDAY = 0
+    TUESDAY = 1
+    WEDNESDAY = 2
+    THURSDAY = 3
+    FRIDAY = 4
+    SATURDAY = 5
+    SUNDAY = 6
