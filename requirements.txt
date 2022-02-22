@@ -6,3 +6,4 @@ icalendar==4.0.9
 pymongo==4.0.1
 certifi==2021.10.8
 dnspython==2.2.0
+scrapy==2.5.1
