@@ -12,7 +12,9 @@ from src.mongo_connector import MongoConnector
 
 
 def cacheIcs(id, returnDict: bool = True):
-    icsString: str = __fetchIcsFile(id)
+    icsString: bytes = __fetchIcsFile(id)
+    if not isinstance(icsString, bytes):
+        raise TypeError
     icsList: List[Dict] = __parseIcs(icsString)
     icsDict: Dict = __listToJson(icsList)
     __saveToCache(id, icsDict)
@@ -20,13 +22,14 @@ def cacheIcs(id, returnDict: bool = True):
         return icsDict
 
 
-def __fetchIcsFile(id) -> str:
+def __fetchIcsFile(id) -> str | None:
     kronoxURL = "https://kronox.hkr.se/setup/jsp/SchemaICAL.ics?startDatum=idag&intervallTyp=m&intervallAntal=6&sprak=SV&sokMedAND=true&forklaringar=true&resurser="  # noqa: E501
     schemaURL = "https://schema.hkr.se/setup/jsp/SchemaICAL.ics?startDatum=idag&intervallTyp=m&intervallAntal=6&sprak=SV&sokMedAND=true&forklaringar=true&resurser="  # noqa: E501
     http = urllib3.PoolManager()
 
     try:
         res = http.request("GET", schemaURL + id)
+
         if res.data == "":
             raise ValueError
     except url_except.TimeoutError or url_except.ConnectionError or ValueError:
@@ -35,12 +38,12 @@ def __fetchIcsFile(id) -> str:
             if res.data == "":
                 raise ValueError
         except url_except.TimeoutError or url_except.ConnectionError or ValueError:  # noqa W501
-            pass
+            return
 
     return res.data
 
 
-def __parseIcs(ics: str) -> List[Dict]:
+def __parseIcs(ics: bytes) -> List[Dict]:
     events = []
     ical = Calendar.from_ical(ics)
     for i, component in enumerate(ical.walk()):

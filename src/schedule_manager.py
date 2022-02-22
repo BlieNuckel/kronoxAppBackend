@@ -19,18 +19,22 @@ class ScheduleManager:
         self.scheduleDict = self.getIcs(id)
 
     def getIcs(self, id: str) -> Dict:
-        schedulesCollection = MongoConnector.getCollection("schedules")
+        try:
+            schedulesCollection = MongoConnector.getCollection("schedules")
 
-        for schedule in schedulesCollection:
-            if id == schedule["_id"]:
-                cacheTime = dateParser.parse(schedule["cachedAt"])
-                currentTime = datetime.datetime.now()
-                timeDiff = currentTime - cacheTime
-                if timeDiff.total_seconds() > 86400:
-                    return ics_service.cacheIcs(id)
-                return schedule
+            for schedule in schedulesCollection:
+                if id == schedule["_id"]:
+                    cacheTime = dateParser.parse(schedule["cachedAt"])
+                    currentTime = datetime.datetime.now()
+                    timeDiff = currentTime - cacheTime
+                    if timeDiff.total_seconds() > 86400:
+                        return ics_service.cacheIcs(id)
 
-        return ics_service.cacheIcs(id)
+                    return schedule
+
+            return ics_service.cacheIcs(id)
+        except TypeError:
+            return {"error": "Schedule not found at kronox"}
 
     def getFilteredSchedule(
         self,
@@ -74,6 +78,8 @@ class ScheduleManager:
                             ]
                         except KeyError:
                             pass
+                    if filtered[month.lower()] == {}:
+                        filtered.pop(month.lower())
         else:
             if len(monthsList) == 0:
                 monthsList = [
@@ -105,6 +111,8 @@ class ScheduleManager:
                             ]
                         except KeyError:
                             pass
+                    if filtered[year.lower()][month.lower()] == {}:
+                        filtered[year.lower()].pop(month.lower())
 
         return filtered
 
@@ -144,7 +152,7 @@ class ScheduleManager:
             monthsList = []
 
         try:
-            if days[0] == "*":
+            if days is None or days[0] == "*":
                 daysList = [str(x) for x in range(1, 32)]
             elif type(days) == list:
                 daysList = days

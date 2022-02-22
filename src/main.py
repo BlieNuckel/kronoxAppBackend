@@ -12,12 +12,6 @@ async def root1():
     return "successfully accessed API!"
 
 
-@app.get("/schedule/{id}")
-async def scheduleGetter(id: str):
-    schedule = ScheduleManager(id)
-    return schedule.scheduleDict
-
-
 @app.get("/schedules/{id}")
 async def scheduleQuery(
     id: str,
@@ -26,6 +20,9 @@ async def scheduleQuery(
     day: list[str] | None = Query(None),
 ) -> Dict:
     schedule = ScheduleManager(id)
+
+    if "error" in schedule.scheduleDict.keys():
+        return schedule.scheduleDict
 
     if not year and not month and not day:
         return schedule.scheduleDict
