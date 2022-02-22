@@ -9,6 +9,7 @@ import re
 import dateutil.parser as dateParser
 
 from src.mongo_connector import MongoConnector
+import src.course_color as color
 
 
 def cacheIcs(id, returnDict: bool = True):
@@ -57,6 +58,7 @@ def __parseIcs(ics: bytes) -> List[Dict]:
             event["lecturer"] = lecturer
             event["location"] = str(component.get("location"))
             event["title"] = title
+            event["color"] = color.getColor(course)
 
             events.append(event)
 
