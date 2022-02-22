@@ -12,6 +12,10 @@ def getColor(course: str) -> str:
             if course.lower() in color["_id"]:
                 courseColor = color["color"]
 
+            if color["_id"] == course.lower():
+                courseColor = color["color"]
+                break
+
     return courseColor
 
 
@@ -19,8 +23,13 @@ def colorAssigned(course: str) -> bool:
     colors = MongoConnector.getCollection("course_colors")
 
     for color in colors:
-        if course.lower() in color["_id"]:
+        if color["_id"] == course.lower():
             return True
+
+    for color in colors:
+        if course.lower() in course.lower():
+            return True
+
     return False
 
 
