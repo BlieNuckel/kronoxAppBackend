@@ -42,4 +42,4 @@ async def searchSchedules(search: str | None = None):
     except AttributeError:
         year = ""
 
-    return runKronoxSearch(search, year)
+    return {"requestedSchedule": runKronoxSearch(search, year)}
