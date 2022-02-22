@@ -1,3 +1,4 @@
+import re
 from typing import Dict
 from fastapi import FastAPI, Query, Response
 
@@ -31,7 +32,14 @@ async def scheduleQuery(
 
 
 @app.get("/schedules/search/")
-async def searchSchedules(search: str | None = None, year: str = ""):
+async def searchSchedules(search: str | None = None):
     if search is None:
         return Response(content="Illegal search query", status_code=400)
+
+    try:
+        year = re.search(r"[1-9]\d{3,}", search).group()
+        search = re.sub(r"[1-9]\d{3,}", "", search)
+    except AttributeError:
+        year = ""
+
     return runKronoxSearch(search, year)
