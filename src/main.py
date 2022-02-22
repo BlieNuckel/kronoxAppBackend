@@ -34,7 +34,7 @@ async def scheduleQuery(
 
 
 @app.get("/schedules/search/")
-async def searchSchedules(searchString: str, yearQuery: str = ""):
-    if searchString is None:
+async def searchSchedules(search: str | None = None, year: str = ""):
+    if search is None:
         return Response(content="Illegal search query", status_code=400)
-    return runKronoxSearch(searchString, yearQuery)
+    return runKronoxSearch(search, year)
