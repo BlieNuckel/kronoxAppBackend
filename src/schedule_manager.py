@@ -97,6 +97,8 @@ class ScheduleManager:
                     "December",
                 ]
             for year in yearsList:
+                if year == "_id" or year == "cachedAt":
+                    continue
                 filtered[year.lower()] = {}
                 if year not in self.scheduleDict.keys():
                     continue
@@ -104,6 +106,7 @@ class ScheduleManager:
                     filtered[year.lower()][month.lower()] = {}
                     for day in daysList:
                         try:
+                            print(self.scheduleDict[year.lower()])
                             filtered[year.lower()][month.lower()][
                                 day.lower()
                             ] = self.scheduleDict[year.lower()][month.lower()][
