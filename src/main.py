@@ -26,9 +26,9 @@ async def scheduleQuery(
         return schedule.scheduleDict
 
     if not year and not month and not day:
-        return schedule.scheduleDict
+        return {"schedule": schedule.scheduleDict}
     else:
-        return schedule.getFilteredSchedule(year, month, day)
+        return {"schedule": schedule.getFilteredSchedule(year, month, day)}
 
 
 @app.get("/schedules/search/")
