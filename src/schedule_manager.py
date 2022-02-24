@@ -106,7 +106,6 @@ class ScheduleManager:
                     filtered[year.lower()][month.lower()] = {}
                     for day in daysList:
                         try:
-                            print(self.scheduleDict[year.lower()])
                             filtered[year.lower()][month.lower()][
                                 day.lower()
                             ] = self.scheduleDict[year.lower()][month.lower()][
