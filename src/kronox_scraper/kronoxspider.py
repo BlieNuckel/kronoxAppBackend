@@ -4,6 +4,8 @@ from scrapy.responsetypes import Response
 from scrapy import Selector
 import re
 
+from src.ics_service import fetchIcsFile
+
 
 class KronoxSpider(scrapy.Spider):
     name = "kronox"
@@ -54,7 +56,11 @@ class KronoxSpider(scrapy.Spider):
                     result.xpath("./table/tr/td[2]/a/text()").get().split()
                 )
 
-                yield item
+                try:
+                    fetchIcsFile(item["scheduleId"])
+                    yield item
+                except TypeError:
+                    yield
 
     def stringUniqueWords(self, wordsToClean: Selector) -> str:
         words = wordsToClean

@@ -13,7 +13,7 @@ import src.course_color as color
 
 
 def cacheIcs(id, returnDict: bool = True):
-    icsString: bytes = __fetchIcsFile(id)
+    icsString: bytes = fetchIcsFile(id)
     if not isinstance(icsString, bytes):
         raise TypeError
     icsList: List[Dict] = __parseIcs(icsString)
@@ -23,7 +23,7 @@ def cacheIcs(id, returnDict: bool = True):
         return icsDict
 
 
-def __fetchIcsFile(id) -> str | None:
+def fetchIcsFile(id) -> str | None:
     kronoxURL = "https://kronox.hkr.se/setup/jsp/SchemaICAL.ics?startDatum=idag&intervallTyp=m&intervallAntal=6&sprak=SV&sokMedAND=true&forklaringar=true&resurser="  # noqa: E501
     schemaURL = "https://schema.hkr.se/setup/jsp/SchemaICAL.ics?startDatum=idag&intervallTyp=m&intervallAntal=6&sprak=SV&sokMedAND=true&forklaringar=true&resurser="  # noqa: E501
     http = urllib3.PoolManager()
@@ -31,14 +31,15 @@ def __fetchIcsFile(id) -> str | None:
     try:
         res = http.request("GET", schemaURL + id)
 
-        if res.data == "":
-            raise ValueError
-    except url_except.TimeoutError or url_except.ConnectionError or ValueError:
+        if "VEVENT" not in str(res.data):
+            raise TypeError
+    except url_except.TimeoutError or url_except.ConnectionError or TypeError:
         try:
             res = http.request("GET", kronoxURL + id)
-            if res.data == "":
-                raise ValueError
-        except url_except.TimeoutError or url_except.ConnectionError or ValueError:  # noqa W501
+
+            if "VEVENT" not in str(res.data):
+                raise TypeError
+        except url_except.TimeoutError or url_except.ConnectionError or TypeError:  # noqa W501
             return
 
     return res.data
