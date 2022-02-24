@@ -23,7 +23,7 @@ async def scheduleQuery(
     schedule = ScheduleManager(id)
 
     if "error" in schedule.scheduleDict.keys():
-        return schedule.scheduleDict
+        return {"schedule": schedule.scheduleDict}
 
     if not year and not month and not day:
         return {"schedule": schedule.scheduleDict}
