@@ -23,7 +23,8 @@ async def scheduleQuery(
     schedule = ScheduleManager(id)
 
     if "error" in schedule.scheduleDict.keys():
-        return {"schedule": schedule.scheduleDict}
+        # return {"schedule": schedule.scheduleDict}
+        return Response(content="Schedule not found error", status_code=404)
 
     if not year and not month and not day:
         return {"schedule": schedule.scheduleDict}
