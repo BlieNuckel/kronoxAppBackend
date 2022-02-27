@@ -1,6 +1,7 @@
 import re
 from typing import Dict
 from fastapi import FastAPI, Query, Response
+from src.kronox_scraper.validity_checker import sortValid
 
 from src.schedule_manager import ScheduleManager
 from src.kronox_scraper.kronox_scrape import runKronoxSearch
@@ -42,5 +43,7 @@ async def searchSchedules(search: str | None = None):
         search = re.sub(r"[1-9]\d{3,}", "", search)
     except AttributeError:
         year = ""
+    fullResults = runKronoxSearch(search, year)
+    filteredResults = sortValid(fullResults)
 
-    return {"requestedSchedule": runKronoxSearch(search, year)}
+    return {"requestedSchedule": filteredResults}
