@@ -39,7 +39,10 @@ def fetchIcsFile(id) -> str | None:
 
             if "VEVENT" not in str(res.data):
                 raise TypeError
-        except url_except.TimeoutError or url_except.ConnectionError or TypeError:  # noqa W501
+        except url_except.TimeoutError or url_except.ConnectionError:
+            raise TimeoutError
+
+        except TypeError:
             return
 
     return res.data

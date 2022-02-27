@@ -28,19 +28,16 @@ class ScheduleManager:
                     currentTime = datetime.datetime.now()
                     timeDiff = currentTime - cacheTime
                     if timeDiff.total_seconds() > 86400:
-                        return ics_service.cacheIcs(id)
+                        try:
+                            return ics_service.cacheIcs(id)
+                        except TimeoutError:
+                            pass
 
                     return schedule
 
             return ics_service.cacheIcs(id)
         except TypeError:
-            return {
-                "error": {
-                    "error": {
-                        "error": [{"error": "Schedule not found at kronox"}]
-                    }
-                }
-            }
+            return {"error": "Schedule not found at kronox"}
 
     def getFilteredSchedule(
         self,
