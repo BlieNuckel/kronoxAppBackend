@@ -36,7 +36,7 @@ class ScheduleManager:
                     return schedule
 
             return ics_service.cacheIcs(id)
-        except TypeError:
+        except TypeError or TimeoutError:
             return {"error": "Schedule not found at kronox"}
 
     def getFilteredSchedule(
