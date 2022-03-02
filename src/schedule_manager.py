@@ -27,7 +27,7 @@ class ScheduleManager:
                     cacheTime = dateParser.parse(schedule["cachedAt"])
                     currentTime = datetime.datetime.now()
                     timeDiff = currentTime - cacheTime
-                    if timeDiff.total_seconds() > 86400:
+                    if timeDiff.total_seconds() > 300:
                         try:
                             return ics_service.cacheIcs(id)
                         except TimeoutError:
