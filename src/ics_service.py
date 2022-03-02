@@ -13,7 +13,7 @@ import src.course_color as color
 
 
 def cacheIcs(id, returnDict: bool = True):
-    icsString: bytes = fetchIcsFile(id)
+    icsString: bytes = __fetchIcsFile(id)
     if not isinstance(icsString, bytes):
         raise TypeError
     icsList: List[Dict] = __parseIcs(icsString)
@@ -23,7 +23,7 @@ def cacheIcs(id, returnDict: bool = True):
         return icsDict
 
 
-def fetchIcsFile(id) -> str | None:
+def __fetchIcsFile(id) -> str | None:
     kronoxURL = "https://kronox.hkr.se/setup/jsp/SchemaICAL.ics?startDatum=idag&intervallTyp=m&intervallAntal=6&sprak=SV&sokMedAND=true&forklaringar=true&resurser="  # noqa: E501
     schemaURL = "https://schema.hkr.se/setup/jsp/SchemaICAL.ics?startDatum=idag&intervallTyp=m&intervallAntal=6&sprak=SV&sokMedAND=true&forklaringar=true&resurser="  # noqa: E501
     http = urllib3.PoolManager()

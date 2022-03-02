@@ -1,7 +1,8 @@
 from typing import Dict, List
 import re
-from dateutil import parser as dateParser
-import datetime
+
+# from dateutil import parser as dateParser
+# import datetime
 
 from src import ics_service
 from src.mongo_connector import MongoConnector
@@ -24,14 +25,14 @@ class ScheduleManager:
 
             for schedule in schedulesCollection:
                 if id == schedule["_id"]:
-                    cacheTime = dateParser.parse(schedule["cachedAt"])
-                    currentTime = datetime.datetime.now()
-                    timeDiff = currentTime - cacheTime
-                    if timeDiff.total_seconds() > 300:
-                        try:
-                            return ics_service.cacheIcs(id)
-                        except TimeoutError:
-                            pass
+                    # cacheTime = dateParser.parse(schedule["cachedAt"])
+                    # currentTime = datetime.datetime.now()
+                    # timeDiff = currentTime - cacheTime
+                    # if timeDiff.total_seconds() > 300:
+                    #     try:
+                    #         return ics_service.cacheIcs(id)
+                    #     except TimeoutError:
+                    #         pass
 
                     return schedule
 
