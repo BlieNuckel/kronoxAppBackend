@@ -40,9 +40,9 @@ async def scheduleQuery(
         return Response(content="Schedule not found error", status_code=404)
 
     if not year and not month and not day:
-        return {"schedule": schedule.scheduleDict}
+        return schedule.scheduleDict
     else:
-        return {"schedule": schedule.getFilteredSchedule(year, month, day)}
+        return schedule.getFilteredSchedule(year, month, day)
 
 
 @app.get("/schedules/search/")

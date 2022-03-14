@@ -18,10 +18,10 @@ def cacheIcs(id: str, baseUrl: str, returnDict: bool = True):
         raise TypeError
     icsList: List[Dict] = __parseIcs(icsString)
     icsDict: Dict = __listToJson(icsList)
-    __saveToCache(id, icsDict, baseUrl)
+    scheduleObject = __saveToCache(id, icsDict, baseUrl)
 
     if returnDict:
-        return icsDict
+        return scheduleObject
 
 
 def __fetchIcsFile(id: str, baseUrl: str) -> str | None:
@@ -110,11 +110,17 @@ def __listToJson(events: List[Dict]) -> Dict:
 
 
 def __saveToCache(id: str, data: Dict, baseUrl: str) -> None:
-    data["_id"] = id
-    data["cachedAt"] = time.ctime()
-    data["baseUrl"] = baseUrl
 
-    MongoConnector.updateOne("schedules", {"_id": id}, data, True)
+    scheduleJson = {}
+
+    scheduleJson["_id"] = id
+    scheduleJson["cachedAt"] = time.ctime()
+    scheduleJson["baseUrl"] = baseUrl
+    scheduleJson["schedule"] = data
+
+    MongoConnector.updateOne("schedules", {"_id": id}, scheduleJson, True)
+
+    return scheduleJson
 
 
 class months(Enum):
