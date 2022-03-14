@@ -18,7 +18,8 @@ def cacheIcs(id: str, baseUrl: str, returnDict: bool = True):
         raise TypeError
     icsList: List[Dict] = __parseIcs(icsString)
     icsDict: Dict = __listToJson(icsList)
-    __saveToCache(id, icsDict)
+    __saveToCache(id, icsDict, baseUrl)
+
     if returnDict:
         return icsDict
 

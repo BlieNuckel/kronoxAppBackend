@@ -24,11 +24,12 @@ async def root1():
 @app.get("/schedules/{id}")
 async def scheduleQuery(
     id: str,
-    school: str | None = Query(None),
+    school: str,
     year: list[str] | None = Query(None),
     month: list[str] | None = Query(None),
     day: list[str] | None = Query(None),
 ) -> Dict:
+
     if school not in VALID_SCHOOLS:
         return Response(content="Invalid school query", status_code=404)
 
@@ -45,9 +46,7 @@ async def scheduleQuery(
 
 
 @app.get("/schedules/search/")
-async def searchSchedules(
-    school: str | None = Query(None), search: str | None = None
-):
+async def searchSchedules(school: str, search: str | None = None):
     if search is None:
         return Response(content="Illegal search query", status_code=404)
     if school not in VALID_SCHOOLS:
