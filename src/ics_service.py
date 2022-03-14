@@ -12,8 +12,8 @@ from src.mongo_connector import MongoConnector
 import src.course_color as color
 
 
-def cacheIcs(id, returnDict: bool = True):
-    icsString: bytes = __fetchIcsFile(id)
+def cacheIcs(id: str, baseUrl: str, returnDict: bool = True):
+    icsString: bytes = __fetchIcsFile(id, baseUrl)
     if not isinstance(icsString, bytes):
         raise TypeError
     icsList: List[Dict] = __parseIcs(icsString)
@@ -23,9 +23,8 @@ def cacheIcs(id, returnDict: bool = True):
         return icsDict
 
 
-def __fetchIcsFile(id) -> str | None:
-    kronoxURL = "https://kronox.hkr.se/setup/jsp/SchemaICAL.ics?startDatum=idag&intervallTyp=m&intervallAntal=6&sprak=SV&sokMedAND=true&forklaringar=true&resurser="  # noqa: E501
-    schemaURL = "https://schema.hkr.se/setup/jsp/SchemaICAL.ics?startDatum=idag&intervallTyp=m&intervallAntal=6&sprak=SV&sokMedAND=true&forklaringar=true&resurser="  # noqa: E501
+def __fetchIcsFile(id: str, baseUrl: str) -> str | None:
+    schemaURL = f"https://{baseUrl}/setup/jsp/SchemaICAL.ics?startDatum=idag&intervallTyp=m&intervallAntal=6&sprak=SV&sokMedAND=true&forklaringar=true&resurser="  # noqa: E501
     http = urllib3.PoolManager()
 
     try:
@@ -34,16 +33,7 @@ def __fetchIcsFile(id) -> str | None:
         if "VEVENT" not in str(res.data):
             raise TypeError
     except url_except.TimeoutError or url_except.ConnectionError or TypeError:
-        try:
-            res = http.request("GET", kronoxURL + id)
-
-            if "VEVENT" not in str(res.data):
-                raise TypeError
-        except url_except.TimeoutError or url_except.ConnectionError:
-            raise TimeoutError
-
-        except TypeError:
-            return
+        pass
 
     return res.data
 
@@ -118,9 +108,10 @@ def __listToJson(events: List[Dict]) -> Dict:
     return eventsDict
 
 
-def __saveToCache(id: str, data: Dict) -> None:
+def __saveToCache(id: str, data: Dict, baseUrl: str) -> None:
     data["_id"] = id
     data["cachedAt"] = time.ctime()
+    data["baseUrl"] = baseUrl
 
     MongoConnector.updateOne("schedules", {"_id": id}, data, True)
 

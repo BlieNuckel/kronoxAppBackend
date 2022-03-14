@@ -16,10 +16,10 @@ class ScheduleManager:
     __events: List = []
     __scheduleDict: Dict = {}
 
-    def __init__(self, id: str) -> None:
-        self.scheduleDict = self.getIcs(id)
+    def __init__(self, id: str, baseUrl: str) -> None:
+        self.scheduleDict = self.getIcs(id, baseUrl)
 
-    def getIcs(self, id: str) -> Dict:
+    def getIcs(self, id: str, baseUrl: str) -> Dict:
         try:
             schedulesCollection = MongoConnector.getCollection("schedules")
 
@@ -36,7 +36,7 @@ class ScheduleManager:
 
                     return schedule
 
-            return ics_service.cacheIcs(id)
+            return ics_service.cacheIcs(id, baseUrl)
         except TypeError or TimeoutError:
             return {"error": "Schedule not found at kronox"}
 

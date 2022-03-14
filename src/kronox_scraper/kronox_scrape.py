@@ -8,19 +8,22 @@ from scrapy.signalmanager import dispatcher
 from multiprocessing import Process
 
 
-def runKronoxSearch(searchQuery: str, yearQuery: str):
+def runKronoxSearch(searchQuery: str, yearQuery: str, baseUrl: str):
     manager = multiprocessing.Manager()
     sharedResultList = manager.list()
 
     p = Process(
-        target=__executeSpider, args=[sharedResultList, searchQuery, yearQuery]
+        target=__executeSpider,
+        args=[sharedResultList, searchQuery, yearQuery, baseUrl],
     )
     p.start()
     p.join()
     return list(sharedResultList)
 
 
-def __executeSpider(sharedResultList: List, searchQuery: str, yearQuery: str):
+def __executeSpider(
+    sharedResultList: List, searchQuery: str, yearQuery: str, baseUrl: str
+):
     logging.getLogger("scrapy").propagate = False
 
     def crawler_callback(signal, sender, item, response, spider):
@@ -29,6 +32,6 @@ def __executeSpider(sharedResultList: List, searchQuery: str, yearQuery: str):
     dispatcher.connect(crawler_callback, signal=signals.item_scraped)
 
     process = CrawlerProcess()
-    process.crawl(KronoxSpider, searchQuery, yearQuery)
+    process.crawl(KronoxSpider, searchQuery, yearQuery, baseUrl)
     process.start()
     process.join()
