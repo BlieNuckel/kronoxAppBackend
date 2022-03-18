@@ -61,21 +61,34 @@ def __parseIcs(ics: bytes) -> List[Dict]:
 
 
 def __titleSplitter(title: str) -> Tuple[str, str, str]:
-    PATTERN1 = re.compile("\s+")  # noqa W605
-    PATTERN2 = re.compile(",+")
 
-    split_name = re.split("Kurs.grp: | Sign: | Moment: | Program: ", title)
-    edit_name = split_name[3]
+    keyWordContent = {
+        "Kurs.grp": "",
+        "Sign": "",
+        "Moment": "",
+        "Program": "",
+    }
+    splitString = ""
+    keywordsInTitle = re.findall(r"([^\s]*):", title)
 
-    edit_name = edit_name.replace(":  :", ":")
-    edit_name = edit_name.rstrip(" : ")
-    for j in PATTERN1.findall(split_name[3]):
-        edit_name = edit_name.replace(j, " ")
-    for j in PATTERN2.findall(split_name[3]):
-        edit_name = edit_name.replace(j, ",")
-    edit_name = edit_name.replace(";", "")
+    for index, keyword in enumerate(keywordsInTitle):
+        if index == 0:
+            splitString += f"{keyword}: |"
+        elif index == len(keywordsInTitle) - 1:
+            splitString += f" {keyword}: "
+        else:
+            splitString += f" {keyword}: |"
 
-    return (edit_name, split_name[1], split_name[2])
+    split_name = re.split(splitString, title)
+
+    for index, keyword in enumerate(keywordsInTitle):
+        keyWordContent[keyword] = split_name[index + 1]
+
+    return (
+        keyWordContent["Moment"],
+        keyWordContent["Program"],
+        keyWordContent["Sign"],
+    )
 
 
 def __listToJson(events: List[Dict]) -> Dict:

@@ -70,7 +70,7 @@ async def searchSchedules(school: str, search: str | None = None):
 
     try:
         year = re.search(r"[1-9]\d{3,}", search).group()
-        search = re.sub(r"[1-9]\d{3,}", "", search)
+        search = search.replace(year, "")
     except AttributeError:
         year = ""
     # filteredResults = await sortValid(fullResults)
