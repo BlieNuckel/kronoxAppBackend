@@ -80,9 +80,13 @@ def __titleSplitter(title: str) -> Tuple[str, str, str]:
             splitString += f" {keyword}: |"
 
     split_name = re.split(splitString, title)
+    try:
+        split_name.remove("")
+    except ValueError:
+        pass
 
     for index, keyword in enumerate(keywordsInTitle):
-        keyWordContent[keyword] = split_name[index + 1]
+        keyWordContent[keyword] = split_name[index]
 
     return (
         keyWordContent["Moment"],
