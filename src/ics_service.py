@@ -69,7 +69,7 @@ def __titleSplitter(title: str) -> Tuple[str, str, str]:
         "Program": "",
     }
     splitString = ""
-    keywordsInTitle = re.findall(r"([^\s]*):", title)
+    keywordsInTitle = re.findall(r"(Kurs.grp|Sign|Moment|Program):", title)
 
     for index, keyword in enumerate(keywordsInTitle):
         if index == 0:
