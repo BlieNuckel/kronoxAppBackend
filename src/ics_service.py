@@ -86,7 +86,12 @@ def __titleSplitter(title: str) -> Tuple[str, str, str]:
         pass
 
     for index, keyword in enumerate(keywordsInTitle):
-        keyWordContent[keyword] = split_name[index]
+        try:
+            keyWordContent[keyword] = split_name[index]
+        except IndexError:
+            print(f"SPLIT NAME: {split_name}")
+            print(f"KEYWORD: {keyword}")
+            print(f"INDEX: {index}")
 
     return (
         keyWordContent["Moment"],
