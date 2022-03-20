@@ -5,7 +5,10 @@ from src.mongo_connector import MongoConnector
 def main():
     schedules = MongoConnector.getCollection("schedules")
     for schedule in schedules:
-        cacheIcs(schedule["_id"], schedule["baseUrl"])
+        try:
+            cacheIcs(schedule["_id"], schedule["baseUrl"])
+        except TypeError as e:
+            print(e)
 
 
 if __name__ == "__main__":
