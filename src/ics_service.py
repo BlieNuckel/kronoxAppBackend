@@ -90,7 +90,7 @@ def __titleSplitter(title: str) -> Tuple[str, str, str]:
 
     return (
         keyWordContent["Moment"],
-        keyWordContent["Program"],
+        keyWordContent["Kurs.grp"],
         keyWordContent["Sign"],
     )
 
