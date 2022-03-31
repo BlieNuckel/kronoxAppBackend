@@ -8,3 +8,4 @@ certifi
 dnspython
 scrapy
 aiohttp
+slowapi

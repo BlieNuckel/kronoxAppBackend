@@ -1,11 +1,17 @@
 import re
 from typing import Dict
-from fastapi import FastAPI, Query, Response
+from fastapi import FastAPI, Query, Request, Response
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
 
 from src.schedule_manager import ScheduleManager
 from src.kronox_scraper.kronox_scrape import runKronoxSearch
 
+limiter = Limiter(key_func=get_remote_address)
 app = FastAPI()
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 VALID_SCHOOLS = [
     "hkr",
@@ -62,7 +68,10 @@ async def scheduleQuery(
 
 
 @app.get("/schedules/search/")
-async def searchSchedules(school: str, search: str | None = None):
+@limiter.limit("50/minute")
+async def searchSchedules(
+    request: Request, school: str, search: str | None = None
+):
     if search is None:
         return Response(content="Illegal search query", status_code=404)
     if school not in VALID_SCHOOLS:
