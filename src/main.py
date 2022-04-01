@@ -68,7 +68,6 @@ async def scheduleQuery(
 
 
 @app.get("/schedules/search/")
-@limiter.limit("40/minute")
 async def searchSchedules(
     request: Request, school: str, search: str | None = None
 ):
