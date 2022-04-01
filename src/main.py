@@ -1,17 +1,11 @@
 import re
 from typing import Dict
 from fastapi import FastAPI, Query, Request, Response
-from slowapi import Limiter, _rate_limit_exceeded_handler
-from slowapi.util import get_remote_address
-from slowapi.errors import RateLimitExceeded
 
 from src.schedule_manager import ScheduleManager
 from src.kronox_scraper.kronox_scrape import runKronoxSearch
 
-limiter = Limiter(key_func=get_remote_address)
 app = FastAPI()
-app.state.limiter = limiter
-app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 VALID_SCHOOLS = [
     "hkr",
