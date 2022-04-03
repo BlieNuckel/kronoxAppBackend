@@ -4,154 +4,20 @@ from typing import Dict, List
 # import datetime
 
 from src import ics_service
-from src.mongo_connector import MongoConnector
 
 
 class ScheduleManager:
     __events: List = []
     __scheduleDict: Dict = {}
 
-    def __init__(self, id: str, baseUrl: str) -> None:
-        self.scheduleDict = self.getIcs(id, baseUrl)
+    def __init__(self, id: str, baseUrl: str, startDate: str) -> None:
+        self.scheduleDict = self.getIcs(id, baseUrl, startDate)
 
-    def getIcs(self, id: str, baseUrl: str) -> Dict:
+    def getIcs(self, id: str, baseUrl: str, startDate: str) -> Dict:
         try:
-            schedulesCollection = MongoConnector.getCollection("schedules")
-
-            for schedule in schedulesCollection:
-                if id == schedule["_id"]:
-                    return schedule
-
-            return ics_service.cacheIcs(id, baseUrl)
+            return ics_service.cacheIcs(id, baseUrl, startDate)
         except TypeError or TimeoutError:
             return {"error": "Schedule not found at kronox"}
-
-    def getFilteredSchedule(
-        self,
-        years: list[str] | None,
-        months: list[str] | None,
-        days: list[str] | None,
-    ) -> Dict:
-        filtered: Dict = {}
-
-        yearsList, monthsList, daysList = self.__generateFilterLists(
-            years, months, days
-        )
-
-        if len(yearsList) < 1:
-            if len(monthsList) == 0:
-                monthsList = [
-                    "January",
-                    "February",
-                    "March",
-                    "April",
-                    "May",
-                    "June",
-                    "July",
-                    "August",
-                    "September",
-                    "October",
-                    "November",
-                    "December",
-                ]
-            for year in self.scheduleDict.keys():
-                if year == "_id" or year == "cachedAt":
-                    continue
-                for month in monthsList:
-                    filtered[month.lower()] = {}
-                    for day in daysList:
-                        try:
-                            filtered[month.lower()][
-                                day.lower()
-                            ] = self.scheduleDict[year.lower()][month.lower()][
-                                day.lower()
-                            ]
-                        except KeyError:
-                            pass
-                    if filtered[month.lower()] == {}:
-                        filtered.pop(month.lower())
-        else:
-            if len(monthsList) == 0:
-                monthsList = [
-                    "January",
-                    "February",
-                    "March",
-                    "April",
-                    "May",
-                    "June",
-                    "July",
-                    "August",
-                    "September",
-                    "October",
-                    "November",
-                    "December",
-                ]
-            for year in yearsList:
-                if year == "_id" or year == "cachedAt":
-                    continue
-                filtered[year.lower()] = {}
-                if year not in self.scheduleDict.keys():
-                    continue
-                for month in monthsList:
-                    filtered[year.lower()][month.lower()] = {}
-                    for day in daysList:
-                        try:
-                            filtered[year.lower()][month.lower()][
-                                day.lower()
-                            ] = self.scheduleDict[year.lower()][month.lower()][
-                                day.lower()
-                            ]
-                        except KeyError:
-                            pass
-                    if filtered[year.lower()][month.lower()] == {}:
-                        filtered[year.lower()].pop(month.lower())
-
-        return filtered
-
-    def __generateFilterLists(
-        self,
-        years: list[str] | None,
-        months: list[str] | None,
-        days: list[str] | None,
-    ) -> tuple[list[str], list[str], list[str]]:
-        try:
-            if years[0] == "*":
-                yearsList = list(self.scheduleDict.keys())
-            elif type(years) == list:
-                yearsList = years
-        except TypeError:
-            yearsList = []
-
-        try:
-            if months[0] == "*":
-                monthsList = [
-                    "January",
-                    "February",
-                    "March",
-                    "April",
-                    "May",
-                    "June",
-                    "July",
-                    "August",
-                    "September",
-                    "October",
-                    "November",
-                    "December",
-                ]
-            elif type(months) == list:
-                monthsList = months
-        except TypeError:
-            monthsList = []
-
-        try:
-            if days is None or days[0] == "*":
-                daysList = [str(x) for x in range(1, 32)]
-            elif type(days) == list:
-                daysList = days
-        except TypeError:
-            daysList = []
-
-        return yearsList, monthsList, daysList
 
     @property
     def events(self) -> List:

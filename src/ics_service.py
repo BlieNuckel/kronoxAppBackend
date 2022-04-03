@@ -8,12 +8,16 @@ from icalendar import Calendar
 import re
 import dateutil.parser as dateParser
 
-from src.mongo_connector import MongoConnector
 import src.course_color as color
 
 
-def cacheIcs(id: str, baseUrl: str, returnDict: bool = True):
-    icsString: bytes = __fetchIcsFile(id, baseUrl)
+def cacheIcs(
+    id: str,
+    baseUrl: str,
+    startDate: str,
+    returnDict: bool = True,
+):
+    icsString: bytes = __fetchIcsFile(id, baseUrl, startDate)
     if not isinstance(icsString, bytes):
         raise TypeError
     icsList: List[Dict] = __parseIcs(icsString)
@@ -24,8 +28,8 @@ def cacheIcs(id: str, baseUrl: str, returnDict: bool = True):
         return scheduleObject
 
 
-def __fetchIcsFile(id: str, baseUrl: str) -> str | None:
-    schemaURL = f"https://{baseUrl}/setup/jsp/SchemaICAL.ics?startDatum=idag&intervallTyp=m&intervallAntal=6&sprak=SV&sokMedAND=true&forklaringar=true&resurser="  # noqa: E501
+def __fetchIcsFile(id: str, baseUrl: str, startDate: str) -> str | None:
+    schemaURL = f"https://{baseUrl}/setup/jsp/SchemaICAL.ics?startDatum={startDate}&intervallTyp=m&intervallAntal=6&sprak=SV&sokMedAND=true&forklaringar=true&resurser="  # noqa: E501
     http = urllib3.PoolManager()
 
     try:
@@ -134,13 +138,12 @@ def __listToJson(events: List[Dict]) -> Dict:
 def __saveToCache(id: str, data: Dict, baseUrl: str) -> None:
 
     scheduleJson = {}
-
     scheduleJson["_id"] = id
     scheduleJson["cachedAt"] = time.ctime()
     scheduleJson["baseUrl"] = baseUrl
     scheduleJson["schedule"] = data
 
-    MongoConnector.updateOne("schedules", {"_id": id}, scheduleJson, True)
+    # MongoConnector.updateOne("schedules", {"_id": id}, scheduleJson, True)
 
     return scheduleJson
 

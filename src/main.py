@@ -1,6 +1,6 @@
 import re
 from typing import Dict
-from fastapi import FastAPI, Query, Request, Response
+from fastapi import FastAPI, Query, Response
 
 from src.schedule_manager import ScheduleManager
 from src.kronox_scraper.kronox_scrape import runKronoxSearch
@@ -41,30 +41,29 @@ async def root1():
 async def scheduleQuery(
     id: str,
     school: str,
-    year: list[str] | None = Query(None),
-    month: list[str] | None = Query(None),
-    day: list[str] | None = Query(None),
+    year: str | None = Query(None),
+    month: str | None = Query(None),
+    day: str | None = Query(None),
 ) -> Dict:
 
     if school not in VALID_SCHOOLS:
         return Response(content="Invalid school query", status_code=404)
 
-    schedule = ScheduleManager(id, SCHOOL_BASE_URLS[school])
+    startDate = "idag"
+    if year and month and day:
+        startDate = f"{year}-{month}-{day}"
+
+    schedule = ScheduleManager(id, SCHOOL_BASE_URLS[school], startDate)
 
     if "error" in schedule.scheduleDict.keys():
         # return {"schedule": schedule.scheduleDict}
         return Response(content="Schedule not found error", status_code=404)
 
-    if not year and not month and not day:
-        return schedule.scheduleDict
-    else:
-        return schedule.getFilteredSchedule(year, month, day)
+    return schedule.scheduleDict
 
 
 @app.get("/schedules/search/")
-async def searchSchedules(
-    request: Request, school: str, search: str | None = None
-):
+async def searchSchedules(school: str, search: str | None = None):
     if search is None:
         return Response(content="Illegal search query", status_code=404)
     if school not in VALID_SCHOOLS:
