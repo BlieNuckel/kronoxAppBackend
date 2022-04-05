@@ -34,5 +34,5 @@ class MongoConnector:
         collection.inser_many(data)
 
     def updateOne(collection: str, filter, data: Dict, upsert: bool) -> None:
-        collection: database.Collection = db[collection]
+        collection = db[collection]
         collection.replace_one(filter, data, upsert=upsert)

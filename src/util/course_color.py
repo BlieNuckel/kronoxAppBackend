@@ -1,4 +1,4 @@
-from src.mongo_connector import MongoConnector
+from src.services.mongo_connector import MongoConnector
 import random
 
 
@@ -9,10 +9,7 @@ def getColor(course: str) -> str:
     else:
         colors = MongoConnector.getCollection("course_colors")
         for color in colors:
-            if (
-                course.lower() in color["_id"]
-                or color["_id"] in course.lower()
-            ):
+            if course.lower() in color["_id"] or color["_id"] in course.lower():
                 courseColor = color["color"]
 
             if color["_id"] == course.lower():

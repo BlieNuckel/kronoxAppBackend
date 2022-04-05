@@ -1,35 +1,14 @@
+from datetime import datetime, timedelta
 import re
 from typing import Dict
 from fastapi import FastAPI, Query, Response
 
-from src.schedule_manager import ScheduleManager
+from src.models.schedule_manager import ScheduleManager
 from src.kronox_scraper.kronox_scrape import runKronoxSearch
+from src.util.enums import StartDateEnum
+from src.util.schools_info import SCHOOL_BASE_URLS, VALID_SCHOOLS
 
 app = FastAPI()
-
-VALID_SCHOOLS = [
-    "hkr",
-    "mau",
-    "oru",
-    # "ltu",
-    "hig",
-    # "sh",
-    "hv",
-    "hb",
-    "mdh",
-]
-SCHOOL_BASE_URLS = {
-    "hkr": "schema.hkr.se",
-    "mau": "schema.mau.se",
-    "oru": "schema.oru.se",
-    # ! "ltu": "schema.ltu.se", COMPLETELY BLOCKED OFF BECAUSE LOGIN REQUIRED
-    "hig": "schema.hig.se",
-    # ! "sh": "kronox.sh.se", COMPLETELY BLOCKED OFF BECAUSE LOGIN REQUIRED
-    "hv": "schema.hv.se",
-    "hb": "schema.hb.se",
-    "mdh": "webbschema.mdh.se",  # ! LOGIN REQUIRED FOR PROGRAMMES
-    # Konstfack school on kronox' website, but can't find schedule page
-}
 
 
 @app.get("/testing")
@@ -41,6 +20,7 @@ async def root1():
 async def scheduleQuery(
     id: str,
     school: str,
+    startTag: str | None = Query(None),
     year: str | None = Query(None),
     month: str | None = Query(None),
     day: str | None = Query(None),
@@ -49,21 +29,59 @@ async def scheduleQuery(
     if school not in VALID_SCHOOLS:
         return Response(content="Invalid school query", status_code=404)
 
-    startDate = "idag"
-    if year and month and day:
+    if not startTag and not year and not month and not day:
+        return Response(content="You must specify either startDateTag or year, month, and day params", status_code=404)
+
+    """First, attempt to create a StartDateEnum from entered startDate.
+    If this fails, fetch the schedule with the given specific date
+    WITHOUT caching it."""
+    try:
+        # ! Ensure backwards compatibility with old app versions!
+        """Takes the entered start date and checks it against the
+        beginning of the current week. This allows us to use the new
+        Enum system, while still supporting the app version that
+        uses the endpoint with year, month, and date for accessing
+        'start of week' schedules."""
+        startDate = ""
+        if not startTag and (year and month and day):
+            startDate = f"{year}-{month.zfill(2)}-{day.zfill(2)}"
+
+        print(f"Start Date: {startDate}")
+        currentTime = datetime.now()
+        startOfWeekTimeStamp = currentTime - timedelta(days=currentTime.weekday())
+
+        print(f"Start of Week: {startOfWeekTimeStamp}")
+
+        if startDate == startOfWeekTimeStamp.strftime("%Y-%m-%d"):
+            startTag = "startOfWeek"
+
+        # Attempts to create a StartDateEnum from the request
+        startDateTag = StartDateEnum(startTag)
+
+        schedule = ScheduleManager(id, SCHOOL_BASE_URLS[school], startDateTag=startDateTag)
+        # try:
+        schedule.fetchIcsWithCaching()
+        # except TypeError or AttributeError:
+        #     return Response(content="An error occured while fetching the schedule", status_code=500)
+
+    except ValueError:
+        # Return an error if there is no valid tag AND no valid year, month, and date specified
+        if not year or not month or not day:
+            return Response(content="Invalid start tag for schedule", status_code=404)
+
         startDate = f"{year}-{month}-{day}"
 
-    schedule = ScheduleManager(id, SCHOOL_BASE_URLS[school], startDate)
-
-    if "error" in schedule.scheduleDict.keys():
-        # return {"schedule": schedule.scheduleDict}
-        return Response(content="Schedule not found error", status_code=404)
+        schedule = ScheduleManager(id, SCHOOL_BASE_URLS[school], startDate=startDate)
+        try:
+            schedule.fetchIcsWithoutCaching()
+        except TypeError or AttributeError:
+            return Response(content="An error occured while fetching the schedule", status_code=500)
 
     return schedule.scheduleDict
 
 
 @app.get("/schedules/search/")
-async def searchSchedules(school: str, search: str | None = None):
+async def searchSchedules(school: str, search: str | None = Query(None)):
     if search is None:
         return Response(content="Illegal search query", status_code=404)
     if school not in VALID_SCHOOLS:
@@ -76,8 +94,4 @@ async def searchSchedules(school: str, search: str | None = None):
         year = ""
     # filteredResults = await sortValid(fullResults)
 
-    return {
-        "requestedSchedule": runKronoxSearch(
-            search, year, SCHOOL_BASE_URLS[school]
-        )
-    }
+    return {"requestedSchedule": runKronoxSearch(search, year, SCHOOL_BASE_URLS[school])}
