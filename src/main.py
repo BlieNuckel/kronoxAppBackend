@@ -3,6 +3,7 @@ from fastapi import FastAPI, Query
 
 # from src.services.validity_checker import sortValid
 from src.routes.schedule_getter import getSchedules
+from src.routes.search_getter import searchSchedules
 
 app = FastAPI()
 
@@ -13,7 +14,7 @@ async def root1():
 
 
 @app.get("/schedules/{id}")
-async def scheduleQuery(
+async def scheduleQueryEndpoint(
     id: str,
     school: str,
     startTag: str | None = Query(None),
@@ -25,5 +26,5 @@ async def scheduleQuery(
 
 
 @app.get("/schedules/search/")
-async def searchSchedules(school: str, search: str | None = Query(None)):
+async def searchSchedulesEndpoint(school: str, search: str | None = Query(None)):
     return searchSchedules(school, search=search)
