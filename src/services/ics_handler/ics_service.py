@@ -24,11 +24,14 @@ def getIcs(id: str, baseUrl: str, startDate: str = None) -> Dict:
 
 def getAndCacheIcs(id: str, baseUrl: str, startDateTag: StartDateEnum, returnDict: bool = True) -> Dict | None:
     icsFile: bytes = ics_utils._fetchIcsFile(id, baseUrl, startDateTag=startDateTag)
+    print("GOT ICS FILE")
     if not isinstance(icsFile, bytes):
         raise TypeError
     icsList: List[Dict] = ics_utils._parseIcs(icsFile)
+    print("PARSED ICS FILE")
     icsDict: Dict = ics_utils._listToJson(icsList)
+    print("LIST TO JSON")
     scheduleObject: Dict = ics_utils._saveToCache(id, icsDict, baseUrl, startDateTag)
-
+    print("CACHED ICS FILE")
     if returnDict:
         return scheduleObject
