@@ -1,5 +1,5 @@
 from src.services.mongo_connector import MongoConnector
-from random import Random
+import random
 
 global NEXT_COLOR_GROUP
 global COLOR_GROUPS
@@ -60,7 +60,7 @@ def generateColor() -> str:
     print("PICKING RANDOM COLOR")
     print(f"COLOR GROUPS: {COLOR_GROUPS}")
     print(f"NEXT COLOR GROUP: {NEXT_COLOR_GROUP % len(COLOR_GROUPS)}")
-    pickedColor = Random.choice(COLOR_GROUPS[(NEXT_COLOR_GROUP % len(COLOR_GROUPS))])
+    pickedColor = random.choice(COLOR_GROUPS[(NEXT_COLOR_GROUP % len(COLOR_GROUPS))])
     print(f"RANDOM COLOR: {pickedColor}")
     NEXT_COLOR_GROUP += 1
     print("NEXT COLOR")
