@@ -15,9 +15,11 @@ def getSchedules(
     day: str | None,
 ):
     if school not in VALID_SCHOOLS:
+        print("SCHOOL NOT VALID")
         return Response(content="Invalid school query", status_code=404)
 
     if not startTag and not year and not month and not day:
+        print("startTag or date missing")
         return Response(content="You must specify either startDateTag or year, month, and day params", status_code=404)
 
     """First, attempt to create a StartDateEnum from entered startDate.
@@ -47,11 +49,13 @@ def getSchedules(
         try:
             schedule.fetchIcsWithCaching()
         except TypeError or AttributeError:
+            print("ERROR WHILE PARSING/FETCHING")
             return Response(content="An error occured while fetching the schedule", status_code=500)
 
     except ValueError:
         # Return an error if there is no valid tag AND no valid year, month, and date specified
         if not year or not month or not day:
+            print("NO VALID DATE AND ERROR WITH DATETAG")
             return Response(content="Invalid start tag for schedule", status_code=404)
 
         startDate = f"{year}-{month}-{day}"
@@ -60,6 +64,7 @@ def getSchedules(
         try:
             schedule.fetchIcsWithoutCaching()
         except TypeError or AttributeError:
+            print("FINAL ERROR")
             return Response(content="An error occured while fetching the schedule", status_code=500)
 
     return schedule.scheduleDict
