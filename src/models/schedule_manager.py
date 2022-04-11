@@ -24,19 +24,19 @@ class ScheduleManager:
         if not self.__startDateTag:
             raise AttributeError
 
-        # try:
-        schedulesCollection = MongoConnector.getCollection("schedules")
+        try:
+            schedulesCollection = MongoConnector.getCollection("schedules")
 
-        for schedule in schedulesCollection:
-            if {"scheduleId": self.__id, "startsAt": self.__startDateTag.value} == schedule["_id"]:
-                print("GOT SCHEDULE FROM DB")
-                self.__scheduleDict = schedule
-                self.__scheduleDict["_id"] = self.__scheduleDict["_id"]["scheduleId"]
-                return
+            for schedule in schedulesCollection:
+                if {"scheduleId": self.__id, "startsAt": self.__startDateTag.value} == schedule["_id"]:
+                    print("GOT SCHEDULE FROM DB")
+                    self.__scheduleDict = schedule
+                    self.__scheduleDict["_id"] = self.__scheduleDict["_id"]["scheduleId"]
+                    return
 
-        self.__scheduleDict = ics_service.getAndCacheIcs(self.__id, self.__baseUrl, self.__startDateTag)
-        # except TypeError or TimeoutError:
-        #     raise TypeError
+            self.__scheduleDict = ics_service.getAndCacheIcs(self.__id, self.__baseUrl, self.__startDateTag)
+        except TypeError or TimeoutError:
+            raise TypeError
 
     def fetchIcsWithoutCaching(self) -> None:
         if not self.__startDate:

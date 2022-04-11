@@ -1,5 +1,28 @@
 from src.services.mongo_connector import MongoConnector
-import random
+from random import Random
+
+global NEXT_COLOR_GROUP
+NEXT_COLOR_GROUP = 0
+
+RED_COLORS = ["#ff424f", "#ff4242", "#ff5e42"]
+ORANGE_COLORS = ["#ff7142", "#ff9442", "#ffad42"]
+YELLOW_COLORS = ["#ffc342", "#ffe642", "#f9ff42"]
+GREEN_COLORS = ["#bdff42", "#7eff42", "#42ff45", "#42ff8a"]
+LIGHT_BLUE_COLORS = ["#42ffc0", "#42ffe0", "#42f6ff"]
+BLUE_COLORS = ["#42aaff", "#426eff", "#5242ff"]
+PURPLE_COLORS = ["#8142ff", "#ad42ff", "#d042ff"]
+PINK_COLORS = ["#fc42ff", "#ff42e6", "#ff427b"]
+
+COLOR_GROUPS = [
+    RED_COLORS,
+    PURPLE_COLORS,
+    YELLOW_COLORS,
+    GREEN_COLORS,
+    BLUE_COLORS,
+    PINK_COLORS,
+    ORANGE_COLORS,
+    LIGHT_BLUE_COLORS,
+]
 
 
 def getColor(course: str) -> str:
@@ -23,18 +46,19 @@ def colorAssigned(course: str) -> bool:
     colors = MongoConnector.getCollection("course_colors")
 
     for color in colors:
-        if color["_id"] == course.lower():
-            return True
-
-    for color in colors:
-        if course.lower() in color["_id"] or color["_id"] in course.lower():
+        if color["_id"] in course.lower() or course.lower() in color["_id"]:
             return True
 
     return False
 
 
 def generateColor() -> str:
-    return "#%06x" % random.randint(0xCCFFFF, 0xED7B7B)
+    global NEXT_COLOR_GROUP
+
+    pickedColor = Random.choice(COLOR_GROUPS[NEXT_COLOR_GROUP % len(COLOR_GROUPS)])
+    NEXT_COLOR_GROUP += 1
+
+    return pickedColor
 
 
 def assignColor(course: str, color: str) -> None:

@@ -48,9 +48,9 @@ import asyncio
 from aiohttp import ClientSession
 
 
-async def sortValid(schedules: list):
+async def sortValid(schedules: list, baseUrl: str):
     scheduleIds = set([x["scheduleId"] for x in schedules])
-    availableSchedules = await make_requests(scheduleIds=scheduleIds)
+    availableSchedules = await make_requests(scheduleIds=scheduleIds, baseUrl=baseUrl)
 
     finalAvailableSchedulesList = []
     for schedule in schedules:
@@ -59,11 +59,11 @@ async def sortValid(schedules: list):
     return finalAvailableSchedulesList
 
 
-async def make_requests(scheduleIds: set, **kwargs) -> list[str]:
+async def make_requests(scheduleIds: set, baseUrl: str, **kwargs) -> list[str]:
     async with ClientSession() as session:
         tasks = []
         for id in scheduleIds:
-            tasks.append(__download_schedule(id=id, session=session, **kwargs))
+            tasks.append(__download_schedule(id=id, session=session, baseUrl=baseUrl, **kwargs))
         results = await asyncio.gather(*tasks)
 
     availableSchedules = []
@@ -72,22 +72,15 @@ async def make_requests(scheduleIds: set, **kwargs) -> list[str]:
     return availableSchedules
 
 
-async def __download_schedule(id: str, session: ClientSession) -> bytes:
+async def __download_schedule(id: str, baseUrl: str, session: ClientSession) -> bytes:
     empty_schedule = b"BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//KronoX gruppen//KronoX 2.0//EN\r\nMETHOD:PUBLISH\r\nX-WR-CALNAME:KRONOX\r\nEND:VCALENDAR\r\n"  # noqa: E501
 
-    kronoxURL = f"https://kronox.hkr.se/setup/jsp/SchemaICAL.ics?startDatum=idag&intervallTyp=m&intervallAntal=6&sprak=SV&sokMedAND=true&forklaringar=true&resurser={id}"  # noqa: E501
-    schemaURL = f"https://schema.hkr.se/setup/jsp/SchemaICAL.ics?startDatum=idag&intervallTyp=m&intervallAntal=6&sprak=SV&sokMedAND=true&forklaringar=true&resurser={id}"  # noqa: E501
+    url = f"https://{baseUrl}/setup/jsp/SchemaICAL.ics?startDatum=idag&intervallTyp=m&intervallAntal=6&sprak=SV&sokMedAND=true&forklaringar=true&resurser={id}"  # noqa: E501
 
     try:
-        async with session.get(schemaURL) as resp:
+        async with session.get(url) as resp:
             content = await resp.read()
             if content != empty_schedule:
                 return id
     except Exception:
-        try:
-            async with session.get(kronoxURL) as resp:
-                content = await resp.read()
-                if content != empty_schedule:
-                    return id
-        except Exception:
-            pass
+        pass
