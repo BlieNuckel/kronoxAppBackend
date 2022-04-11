@@ -22,6 +22,7 @@ class ScheduleManager:
 
     def fetchIcsWithCaching(self) -> None:
         if not self.__startDateTag:
+            print("START DATE TAG NOT DEFINED - schedule_manager.py:25")
             raise AttributeError
 
         try:
@@ -29,7 +30,6 @@ class ScheduleManager:
 
             for schedule in schedulesCollection:
                 if {"scheduleId": self.__id, "startsAt": self.__startDateTag.value} == schedule["_id"]:
-                    print("GOT SCHEDULE FROM DB")
                     self.__scheduleDict = schedule
                     self.__scheduleDict["_id"] = self.__scheduleDict["_id"]["scheduleId"]
                     return
@@ -41,6 +41,7 @@ class ScheduleManager:
 
     def fetchIcsWithoutCaching(self) -> None:
         if not self.__startDate:
+            print("START DATE NOT DEFINED - schedule_manager.py:44")
             raise AttributeError
 
         try:

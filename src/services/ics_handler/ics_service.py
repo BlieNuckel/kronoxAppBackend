@@ -8,6 +8,7 @@ from src.util.enums import StartDateEnum
 def getIcs(id: str, baseUrl: str, startDate: str = None) -> Dict:
     icsFile: bytes = ics_utils._fetchIcsFile(id, baseUrl, startDate=startDate)
     if not isinstance(icsFile, bytes):
+        print("ICS FILE NOT BYTES - ics_service.py:11")
         raise TypeError
     icsList: List[Dict] = ics_utils._parseIcs(icsFile)
     icsDict: Dict = ics_utils._listToJson(icsList)
@@ -25,13 +26,10 @@ def getIcs(id: str, baseUrl: str, startDate: str = None) -> Dict:
 def getAndCacheIcs(id: str, baseUrl: str, startDateTag: StartDateEnum, returnDict: bool = True) -> Dict | None:
     icsFile: bytes = ics_utils._fetchIcsFile(id, baseUrl, startDateTag=startDateTag)
     if not isinstance(icsFile, bytes):
-        print("NOT BYTES")
+        print("ICS FILE NOT BYTES - ics_service.py:28")
         raise TypeError
     icsList: List[Dict] = ics_utils._parseIcs(icsFile)
-    print("PARSED ICS FILE")
     icsDict: Dict = ics_utils._listToJson(icsList)
-    print("LIST TO JSON")
     scheduleObject: Dict = ics_utils._saveToCache(id, icsDict, baseUrl, startDateTag)
-    print("CACHED ICS FILE")
     if returnDict:
         return scheduleObject

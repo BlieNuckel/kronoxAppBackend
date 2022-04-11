@@ -27,6 +27,7 @@ def _fetchIcsFile(id: str, baseUrl: str, startDateTag: StartDateEnum = None, sta
         res = http.request("GET", schemaURL + id)
 
         if "VEVENT" not in str(res.data):
+            print("DATA FETCHED HAS NO 'VEVENT' TAG - ics_utils.py:30")
             raise TypeError
     except url_except.TimeoutError or url_except.ConnectionError or TypeError:
         pass
@@ -52,7 +53,6 @@ def _parseIcs(ics: bytes) -> List[Dict]:
 
             events.append(event)
 
-    print("PARSED EVENTS")
     return events
 
 
