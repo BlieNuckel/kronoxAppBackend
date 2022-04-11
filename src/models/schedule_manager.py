@@ -22,6 +22,7 @@ class ScheduleManager:
 
     def fetchIcsWithCaching(self) -> None:
         if not self.__startDateTag:
+            print("ERROR WITH START DATE TAG")
             raise AttributeError
 
         try:
@@ -36,6 +37,7 @@ class ScheduleManager:
 
             self.__scheduleDict = ics_service.getAndCacheIcs(self.__id, self.__baseUrl, self.__startDateTag)
         except TypeError or TimeoutError:
+            print("ERROR IN MONGO FETCHING")
             raise TypeError
 
     def fetchIcsWithoutCaching(self) -> None:
