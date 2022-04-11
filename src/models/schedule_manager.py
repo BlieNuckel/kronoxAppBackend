@@ -35,7 +35,8 @@ class ScheduleManager:
                     return
 
             self.__scheduleDict = ics_service.getAndCacheIcs(self.__id, self.__baseUrl, self.__startDateTag)
-        except TypeError or TimeoutError:
+        except TypeError or TimeoutError as e:
+            print(e)
             raise TypeError
 
     def fetchIcsWithoutCaching(self) -> None:
@@ -44,7 +45,8 @@ class ScheduleManager:
 
         try:
             self.__scheduleDict = ics_service.getIcs(self.__id, self.__baseUrl, self.__startDate)
-        except TypeError or TimeoutError:
+        except TypeError or TimeoutError as e:
+            print(e)
             raise TypeError
 
     @property
