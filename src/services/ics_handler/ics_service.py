@@ -24,9 +24,8 @@ def getIcs(id: str, baseUrl: str, startDate: str = None) -> Dict:
 
 def getAndCacheIcs(id: str, baseUrl: str, startDateTag: StartDateEnum, returnDict: bool = True) -> Dict | None:
     icsFile: bytes = ics_utils._fetchIcsFile(id, baseUrl, startDateTag=startDateTag)
-    print("GOT ICS FILE")
-    print(icsFile)
     if not isinstance(icsFile, bytes):
+        print("NOT BYTES")
         raise TypeError
     icsList: List[Dict] = ics_utils._parseIcs(icsFile)
     print("PARSED ICS FILE")

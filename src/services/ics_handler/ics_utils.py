@@ -52,6 +52,7 @@ def _parseIcs(ics: bytes) -> List[Dict]:
 
             events.append(event)
 
+    print("PARSED EVENTS")
     return events
 
 

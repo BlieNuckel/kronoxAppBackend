@@ -55,8 +55,11 @@ def colorAssigned(course: str) -> bool:
 def generateColor() -> str:
     global NEXT_COLOR_GROUP
 
+    print("PICKING RANDOM COLOR")
     pickedColor = Random.choice(COLOR_GROUPS[NEXT_COLOR_GROUP % len(COLOR_GROUPS)])
+    print(f"RANDOM COLOR: {pickedColor}")
     NEXT_COLOR_GROUP += 1
+    print("NEXT COLOR")
 
     return pickedColor
 
