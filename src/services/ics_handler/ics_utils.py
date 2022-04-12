@@ -79,8 +79,8 @@ def _parseCompareIcs(ics: bytes, generated_uuids, currentEventsList) -> List[Dic
                 continue
             events.append(_createEvent(component, flag, generated_uuids, i))
             if(events[i]['start'] != currentEventsList[i]['start'] | events[i]['end'] != currentEventsList[i]['end']):
-                events[i]['start'] = int(str(events[i]['start'])[:-4]+'9999')
-                generated_uuids[i] = events[i]['start']
+                events[i]['channel_id'] = int(str(events[i]['channel_id'])[:-4]+'9999')
+                generated_uuids[i] = events[i]['channel_id']
             
     return events, scheduleJson["generated_uuids"]
 
