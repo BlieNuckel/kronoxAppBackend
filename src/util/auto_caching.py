@@ -8,12 +8,13 @@ def main():
     schedules = MongoConnector.getCollection("schedules")
     for schedule in schedules:
         try:
-            middleManParserCache(schedule["_id"]["scheduleId"],
+            middleManParserCache(
+            schedule["_id"]["scheduleId"],
             schedule,
             schedule["schedule"],
-                schedule["baseUrl"],
-                StartDateEnum(schedule["startsAt"]),
-                returnDict=False,)
+            schedule["baseUrl"],
+            StartDateEnum(schedule["startsAt"]),
+            returnDict=False,)
         except TypeError as e:
             print(e)
 

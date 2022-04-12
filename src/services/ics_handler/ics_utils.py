@@ -1,5 +1,6 @@
 import time
 import uuid
+import json
 from typing import Dict, List, Tuple
 import urllib3
 import urllib3.exceptions as url_except
@@ -60,7 +61,7 @@ def _parseIcs(ics: bytes) -> List[Dict] and List[int]:
     return events, uuid_list
 
 
-def _parseCompareIcs(ics: bytes, schedule, currentEventsList) -> List[Dict] and List[int]:
+def _parseCompareIcs(ics: bytes, schedule, savedEventsList) -> List[Dict] and List[int]:
     ## Parse list of previous uuids and assign them incrementally
     ## to the events in the new updated schedule, up until they
     ## run out. Then we append new uuids.
@@ -71,29 +72,56 @@ def _parseCompareIcs(ics: bytes, schedule, currentEventsList) -> List[Dict] and 
     ical = Calendar.from_ical(ics)
     flag = False
 
-    offset = 0
-    i = 0
-    newList = [i for i in ical.walk() if i.name == "VEVENT"]
-    comparator = _createEvent(newList[0], False, generated_uuids, 0)
 
-    for item in newList:
-        if comparator == currentEventsList[offset]:
+    ## Get list of possible events in new schedule
+    fetchedList = [i for i in ical.walk() if i.name == "VEVENT"]
+    offset = 0
+    comparator = _createEvent(fetchedList[0], False, generated_uuids, 0)
+    ## Calculate how far ahead new schedule is -> assign to offset as int
+    ## For each item in the OLD list, increment by one until we have
+    ## the corresponding item in the NEW list: The distance is the offset
+    for i, item in enumerate(savedEventsList):
+        if savedEventsList[i] == comparator:
+            offset = i
             break
-        offset += 1
+    
+    ## Only use values from beginning of offset
+    ## to current end in generated uuids
     generated_uuids = generated_uuids[offset:]
 
-    for i, component in enumerate(newList):
+
+    """ Old list we use to compare new schedule with
+        just to check for changes in schedule events.
+        We only need to check for changes till the
+        end of this list in the next loop, since
+        any newly incoming schedule events will not
+        be any different from the saved one's since
+        they are non-existant in the old one"""
+    savedEventsList = savedEventsList[offset:]
+    
+
+    for i, component in enumerate(fetchedList):
         if i > len(generated_uuids): 
             flag = True
             events.append(_createEvent(component, flag, generated_uuids, i))
             continue
         events.append(_createEvent(component, flag, generated_uuids, i))
 
-        if(events[i]['start'] != currentEventsList[i]['start'] or events[i]['end'] != currentEventsList[i]['end']):
-            events[i]['channel_id'] = int(str(events[i]['channel_id'])[:-4]+'9999')
-            generated_uuids[i] = events[i]['channel_id']
-    schedule["generated_uuids"] = generated_uuids
-    return events, schedule["generated_uuids"]
+        ## Only need to compare if the index is
+        ## less than the length of the new list,
+        ## since those events after 'i' are new anyway.
+
+        ## THIS PART IS NOT WORKING
+        if i < len(savedEventsList):
+            if events[i] != savedEventsList[i]:
+                ## Replace last character in uuid with a '#'
+                events[i]['channel_id'] = str(events[i]['channel_id'])[:-1]+'#'
+                generated_uuids[i] = events[i]['channel_id']
+
+    """Assign new list of uuid's to cached return value"""
+    return events, generated_uuids
+
+
 
 def _createEvent(component, flag, uuids, i):
     
@@ -196,4 +224,4 @@ def _saveToCache(id: str, data: Dict, baseUrl: str, startDateTag: StartDateEnum,
 
 def getUniqueScheduleChannelId():
     ## Right shift by 64 bits to avoid 8 byte int limit in MongoDb
-    return (uuid.uuid1().int>>64)/2
+    return str((uuid.uuid1().int>>64)/2).replace('.', '')[:-4]
