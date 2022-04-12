@@ -17,7 +17,7 @@ CONNECTION_STRING = CONNECTION_STRING.replace("<user>", USERNAME)
 CONNECTION_STRING = CONNECTION_STRING.replace("<password>", PASSWORD)
 
 client = MongoClient(CONNECTION_STRING, tlsCAFile=certifi.where())
-db: database.Database = client["schedules"]
+db: database.Database = client.get_default_database()
 
 
 class MongoConnector:
