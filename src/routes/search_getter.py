@@ -3,7 +3,7 @@ from fastapi import Response
 import re
 
 from src.util.schools_info import SCHOOL_BASE_URLS, VALID_SCHOOLS
-from src.kronox_scraper.kronox_scrape import runKronoxSearch
+from src.services.search_scraper.search_scrape_start import runKronoxSearch
 
 
 def searchSchedules(school: str, search: str | None) -> Dict | Response:

@@ -1,7 +1,7 @@
 import logging
 import multiprocessing
 from typing import List
-from src.kronox_scraper.kronoxspider import KronoxSpider
+from src.services.search_scraper.search_spider import SearchSpider
 from scrapy.crawler import CrawlerProcess
 from scrapy import signals
 from scrapy.signalmanager import dispatcher
@@ -21,9 +21,7 @@ def runKronoxSearch(searchQuery: str, yearQuery: str, baseUrl: str):
     return list(sharedResultList)
 
 
-def __executeSpider(
-    sharedResultList: List, searchQuery: str, yearQuery: str, baseUrl: str
-):
+def __executeSpider(sharedResultList: List, searchQuery: str, yearQuery: str, baseUrl: str):
     logging.getLogger("scrapy").propagate = False
 
     def crawler_callback(signal, sender, item, response, spider):
@@ -32,6 +30,6 @@ def __executeSpider(
     dispatcher.connect(crawler_callback, signal=signals.item_scraped)
 
     process = CrawlerProcess()
-    process.crawl(KronoxSpider, searchQuery, yearQuery, baseUrl)
+    process.crawl(SearchSpider, searchQuery, yearQuery, baseUrl)
     process.start()
     process.join()

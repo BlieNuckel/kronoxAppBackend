@@ -5,8 +5,8 @@ from scrapy import Selector
 import re
 
 
-class KronoxSpider(scrapy.Spider):
-    name = "kronox"
+class SearchSpider(scrapy.Spider):
+    name = "search"
 
     def __init__(self, searchString: str, yearQuery: str, baseUrl: str):
         self.searchString = searchString
@@ -40,10 +40,7 @@ class KronoxSpider(scrapy.Spider):
         results: List[Selector] = response.selector.xpath("/html/body/ul/li")
         for result in results:
 
-            if (
-                self.yearQuery
-                in result.xpath("./table/tr/td[2]/a/text()").get()
-            ):
+            if self.yearQuery in result.xpath("./table/tr/td[2]/a/text()").get():
                 item = {}
 
                 item["scheduleId"] = re.findall(
@@ -51,9 +48,7 @@ class KronoxSpider(scrapy.Spider):
                     result.xpath("./table/tr/td[2]/a/@href").get(),
                 )[0][0]
 
-                item["scheduleName"] = self.stringUniqueWords(
-                    result.xpath("./table/tr/td[2]/a/text()").get().split()
-                )
+                item["scheduleName"] = self.stringUniqueWords(result.xpath("./table/tr/td[2]/a/text()").get().split())
 
                 yield item
 
