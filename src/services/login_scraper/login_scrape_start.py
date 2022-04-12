@@ -1,5 +1,6 @@
 import multiprocessing
 from typing import List
+from src.services.login_scraper.login import Login
 from src.services.login_scraper.login_spider import LoginSpider
 from scrapy.crawler import CrawlerProcess
 from scrapy import signals
@@ -33,4 +34,5 @@ def __executeSpider(sharedResultList: List, baseUrl: str, username: str, passwor
 
 
 if __name__ == "__main__":
-    runKronoxLogin("kronox.hkr.se", "lasse_koordt_rosenkrans.poulsen0003@stud.hkr.se", "ZjqZj58CtuYvL2")
+    login = Login("lasse_koordt_rosenkrans.poulsen0003@stud.hkr.se", "ZjqZj58CtuYvL2", "kronox.hkr.se")
+    login.getExams()
