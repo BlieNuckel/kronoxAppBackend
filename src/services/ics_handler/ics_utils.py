@@ -60,29 +60,40 @@ def _parseIcs(ics: bytes) -> List[Dict] and List[int]:
     return events, uuid_list
 
 
-def _parseCompareIcs(ics: bytes, generated_uuids, currentEventsList) -> List[Dict] and List[int]:
+def _parseCompareIcs(ics: bytes, schedule, currentEventsList) -> List[Dict] and List[int]:
     ## Parse list of previous uuids and assign them incrementally
     ## to the events in the new updated schedule, up until they
     ## run out. Then we append new uuids.
+    
+    generated_uuids = schedule['generated_uuids']
+
     events = []
     ical = Calendar.from_ical(ics)
     flag = False
 
-    ## List of remaining events
-    for i, component in enumerate(ical.walk()):
-        ## Check if length of new ical does not overflow
-        ## current collection of uuids
-        if component.name == "VEVENT":
-            if i > len(generated_uuids):
-                flag = True
-                events.append(_createEvent(component, flag, generated_uuids, i))
-                continue
+    offset = 0
+    i = 0
+    newList = [i for i in ical.walk() if i.name == "VEVENT"]
+    comparator = _createEvent(newList[0], False, generated_uuids, 0)
+
+    for item in newList:
+        if comparator == currentEventsList[offset]:
+            break
+        offset += 1
+    generated_uuids = generated_uuids[offset:]
+
+    for i, component in enumerate(newList):
+        if i > len(generated_uuids): 
+            flag = True
             events.append(_createEvent(component, flag, generated_uuids, i))
-            if(events[i]['start'] != currentEventsList[i]['start'] | events[i]['end'] != currentEventsList[i]['end']):
-                events[i]['channel_id'] = int(str(events[i]['channel_id'])[:-4]+'9999')
-                generated_uuids[i] = events[i]['channel_id']
-            
-    return events, scheduleJson["generated_uuids"]
+            continue
+        events.append(_createEvent(component, flag, generated_uuids, i))
+
+        if(events[i]['start'] != currentEventsList[i]['start'] or events[i]['end'] != currentEventsList[i]['end']):
+            events[i]['channel_id'] = int(str(events[i]['channel_id'])[:-4]+'9999')
+            generated_uuids[i] = events[i]['channel_id']
+    schedule["generated_uuids"] = generated_uuids
+    return events, schedule["generated_uuids"]
 
 def _createEvent(component, flag, uuids, i):
     
