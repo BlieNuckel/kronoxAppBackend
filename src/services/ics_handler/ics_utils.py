@@ -1,3 +1,4 @@
+import random
 import time
 import uuid
 import json
@@ -227,5 +228,4 @@ def _saveToCache(id: str, data: Dict, baseUrl: str, startDateTag: StartDateEnum,
     return scheduleJson
 
 def getUniqueScheduleChannelId():
-    ## Right shift by 64 bits to avoid 8 byte int limit in MongoDb
-    return str((uuid.uuid1().int>>64)/2).replace('.', '')[:-4]
+    return str(random.getrandbits(32))
