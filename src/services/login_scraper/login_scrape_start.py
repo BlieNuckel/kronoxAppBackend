@@ -35,4 +35,4 @@ def __executeSpider(sharedResultList: List, baseUrl: str, username: str, passwor
 
 if __name__ == "__main__":
     login = Login("lasse_koordt_rosenkrans.poulsen0003@stud.hkr.se", "ZjqZj58CtuYvL2", "kronox.hkr.se")
-    login.getExams()
+    login.getEvents()
