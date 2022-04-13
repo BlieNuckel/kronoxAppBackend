@@ -1,5 +1,6 @@
 import time
 import uuid
+import json
 from typing import Dict, List, Tuple
 import urllib3
 import urllib3.exceptions as url_except
@@ -60,29 +61,71 @@ def _parseIcs(ics: bytes) -> List[Dict] and List[int]:
     return events, uuid_list
 
 
-def _parseCompareIcs(ics: bytes, generated_uuids, currentEventsList) -> List[Dict] and List[int]:
+def _parseCompareIcs(ics: bytes, schedule, savedEventsList) -> List[Dict] and List[int]:
     ## Parse list of previous uuids and assign them incrementally
     ## to the events in the new updated schedule, up until they
     ## run out. Then we append new uuids.
+    
+    generated_uuids = schedule['generated_uuids']
+
     events = []
     ical = Calendar.from_ical(ics)
     flag = False
 
-    ## List of remaining events
-    for i, component in enumerate(ical.walk()):
-        ## Check if length of new ical does not overflow
-        ## current collection of uuids
-        if component.name == "VEVENT":
-            if i > len(generated_uuids):
-                flag = True
-                events.append(_createEvent(component, flag, generated_uuids, i))
-                continue
+
+    ## Get list of possible events in new schedule
+    fetchedList = [i for i in ical.walk() if i.name == "VEVENT"]
+    offset = 0
+    comparator = _createEvent(fetchedList[0], False, generated_uuids, 0)
+    ## Calculate how far ahead new schedule is -> assign to offset as int
+    ## For each item in the OLD list, increment by one until we have
+    ## the corresponding item in the NEW list: The distance is the offset
+    for i, item in enumerate(savedEventsList):
+        if savedEventsList[i] == comparator:
+            offset = i
+            break
+    
+    ## Only use values from beginning of offset
+    ## to current end in generated uuids
+    generated_uuids = generated_uuids[offset:]
+
+
+    """ Old list we use to compare new schedule with
+        just to check for changes in schedule events.
+        We only need to check for changes till the
+        end of this list in the next loop, since
+        any newly incoming schedule events will not
+        be any different from the saved one's since
+        they are non-existant in the old one"""
+    savedEventsList = savedEventsList[offset:]
+    
+
+    for i, component in enumerate(fetchedList):
+        if i > len(generated_uuids): 
+            flag = True
             events.append(_createEvent(component, flag, generated_uuids, i))
-            if(events[i]['start'] != currentEventsList[i]['start'] | events[i]['end'] != currentEventsList[i]['end']):
-                events[i]['channel_id'] = int(str(events[i]['channel_id'])[:-4]+'9999')
+            continue
+        events.append(_createEvent(component, flag, generated_uuids, i))
+
+        ## Only need to compare if the index is
+        ## less than the length of the new list,
+        ## since those events after 'i' are new anyway.
+
+        ## THIS PART IS NOT WORKING
+        if i < len(savedEventsList):
+            if not equal(events[i], savedEventsList[i]):
+                ## Replace last character in uuid with a '#'
+                events[i]['channel_id'] = str(events[i]['channel_id'])[:-1]+'#'
                 generated_uuids[i] = events[i]['channel_id']
-            
-    return events, scheduleJson["generated_uuids"]
+
+    """Assign new list of uuid's to cached return value"""
+    return events, generated_uuids
+
+def equal(oldEvent, newEvent):
+    return (oldEvent['start'] == newEvent['start'] and oldEvent['end'] == newEvent['end']
+    and oldEvent['course'] == newEvent['course'] and oldEvent['lecturer'] == newEvent['lecturer']
+    and oldEvent['location'] == newEvent['location'] and oldEvent['title'] == newEvent['title'])
+
 
 def _createEvent(component, flag, uuids, i):
     
@@ -185,4 +228,4 @@ def _saveToCache(id: str, data: Dict, baseUrl: str, startDateTag: StartDateEnum,
 
 def getUniqueScheduleChannelId():
     ## Right shift by 64 bits to avoid 8 byte int limit in MongoDb
-    return (uuid.uuid1().int>>64)/2
+    return str((uuid.uuid1().int>>64)/2).replace('.', '')[:-4]
