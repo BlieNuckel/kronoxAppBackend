@@ -11,19 +11,19 @@ class Login:
         self.baseUrl = baseUrl
 
     def getEvents(self):
-        process = CrawlerProcess()
+        process = CrawlerProcess(install_root_handler=False)
         process.crawl(ActivitiesSpider, self.baseUrl, self.username, self.password)
         process.start()
         process.join()
 
     def unregister(self, event_code: str):
-        process = CrawlerProcess()
+        process = CrawlerProcess(install_root_handler=False)
         process.crawl(UnregisterSpider, self.baseUrl, self.username, self.password, event_code)
         process.start()
         process.join()
 
     def register(self, event_code: str):
-        process = CrawlerProcess()
+        process = CrawlerProcess(install_root_handler=False)
         process.crawl(RegisterSpider, self.baseUrl, self.username, self.password, event_code)
         process.start()
         process.join()
