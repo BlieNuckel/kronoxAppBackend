@@ -119,7 +119,6 @@ def _parseCompareIcs(ics: bytes, schedule, savedEventsList) -> List[Dict] and Li
                 generated_uuids[i] = events[i]['channel_id']
 
     """Assign new list of uuid's to cached return value"""
-    print(generated_uuids)
     return events, generated_uuids
 
 def equal(oldEvent, newEvent):
