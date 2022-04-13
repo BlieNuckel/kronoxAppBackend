@@ -113,14 +113,19 @@ def _parseCompareIcs(ics: bytes, schedule, savedEventsList) -> List[Dict] and Li
 
         ## THIS PART IS NOT WORKING
         if i < len(savedEventsList):
-            if events[i] != savedEventsList[i]:
+            if not equal(events[i], savedEventsList[i]):
                 ## Replace last character in uuid with a '#'
                 events[i]['channel_id'] = str(events[i]['channel_id'])[:-1]+'#'
                 generated_uuids[i] = events[i]['channel_id']
 
     """Assign new list of uuid's to cached return value"""
+    print(generated_uuids)
     return events, generated_uuids
 
+def equal(oldEvent, newEvent):
+    return (oldEvent['start'] == newEvent['start'] and oldEvent['end'] == newEvent['end']
+    and oldEvent['course'] == newEvent['course'] and oldEvent['lecturer'] == newEvent['lecturer']
+    and oldEvent['location'] == newEvent['location'] and oldEvent['title'] == newEvent['title'])
 
 
 def _createEvent(component, flag, uuids, i):
