@@ -1,7 +1,11 @@
-from scrapy.crawler import CrawlerProcess
-from src.services.login_scraper.user_event_spiders.activities_spider import ActivitiesSpider
+import multiprocessing
+from multiprocessing import Manager
+from typing import Dict
+
+from fastapi import Response
 from src.services.login_scraper.user_event_spiders.register_spider import RegisterSpider
 from src.services.login_scraper.user_event_spiders.unregister_spider import UnregisterSpider
+from src.services.login_scraper.spider_executers import event_executers
 
 
 class Login:
@@ -10,20 +14,34 @@ class Login:
         self.password = password
         self.baseUrl = baseUrl
 
-    def getEvents(self):
-        process = CrawlerProcess(install_root_handler=False)
-        process.crawl(ActivitiesSpider, self.baseUrl, self.username, self.password)
-        process.start()
-        process.join()
+    def errHandler(self, exception: Exception):
+        raise exception
 
-    def unregister(self, event_code: str):
-        process = CrawlerProcess(install_root_handler=False)
-        process.crawl(UnregisterSpider, self.baseUrl, self.username, self.password, event_code)
-        process.start()
-        process.join()
+    def getEvents(self) -> Dict | Response:
+        manager = Manager()
+        dict = manager.dict()
 
-    def register(self, event_code: str):
-        process = CrawlerProcess(install_root_handler=False)
-        process.crawl(RegisterSpider, self.baseUrl, self.username, self.password, event_code)
-        process.start()
-        process.join()
+        p = multiprocessing.Process(
+            target=event_executers._executeGetEventsSpider,
+            args=[dict, self.username, self.password, self.baseUrl, self.errHandler],
+        )
+        p.start()
+        p.join()
+
+        return dict
+
+    def unregister(self, event_code: str) -> Dict | Response:
+        p = multiprocessing.Process(
+            target=event_executers._executeRegisterOrUnregisterEventSpider,
+            args=[UnregisterSpider, self.username, self.password, self.baseUrl, event_code],
+        )
+        p.start()
+        p.join()
+
+    def register(self, event_code: str) -> Dict | Response:
+        p = multiprocessing.Process(
+            target=event_executers._executeRegisterOrUnregisterEventSpider,
+            args=[RegisterSpider, self.username, self.password, self.baseUrl, event_code],
+        )
+        p.start()
+        p.join()

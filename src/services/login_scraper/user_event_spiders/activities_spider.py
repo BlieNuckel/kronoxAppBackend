@@ -1,13 +1,18 @@
-from scrapy import Request
+from datetime import datetime
+import re
+from types import FunctionType
+from typing import List
+from scrapy import Request, Selector
 from src.services.login_scraper.login_spider import LoginSpider
-from scrapy.responsetypes import Response
+from scrapy.http import Response
 
 
 class ActivitiesSpider(LoginSpider):
-    def __init__(self, baseUrl: str, username: str, password: str):
-        super().__init__(baseUrl, username, password)
+    def __init__(self, baseUrl: str, username: str, password: str, errCallback: FunctionType):
+        super().__init__(baseUrl, username, password, errCallback)
 
     def onLoggedIn(self, response: Response):
+        print("MADE IT TO ON LOGGED IN")
         return Request.from_curl(
             f"""
                 curl 'https://{self.baseUrl}/aktivitetsanmalan.jsp?'
@@ -28,3 +33,74 @@ class ActivitiesSpider(LoginSpider):
             """,  # noqa
             callback=self.parse,
         )
+
+    def parse(self, response: Response):
+        print(response)
+        result = {
+            "registered": [],
+            "available": [],
+            "upcoming": [],
+            "missed": [],
+        }
+
+        # inner_text: List[str] = response.selector.css(".tentamen-container").xpath("div/text()").getall()
+        inner_texts: List[str] = response.selector.css(".tentamen-container").xpath("div/text()").getall()[2:]
+
+        for index, text in enumerate(inner_texts):
+            if text.strip() == "":
+                event_divs: List[Selector] = response.selector.css(".tentamen-container").xpath(
+                    "(div)"
+                )[index].xpath("div")
+                for event_div in event_divs:
+                    event = {"event_code": ""}
+
+                    date: str = ""
+
+                    event["name"] = event_div.xpath("div/b/text()").get().strip()
+
+                    inner_divs = event_div.xpath("div")
+                    for inner_div in inner_divs:
+                        if inner_div.xpath("a/@onclick"):
+                            onclick_content = inner_div.xpath("a/@onclick").get().strip()
+                            event["event_code"] = re.findall(r"anmal\('(.*)'(,false)?\)", onclick_content)[0][0]
+
+                            continue
+
+                        content = inner_div.xpath("text()").get()
+
+                        if content is None:
+                            continue
+
+                        content = content.strip()
+
+                        if content.lower().startswith("datum:"):
+                            date = content.strip()[7:]
+                        elif content.lower().startswith("start:"):
+                            time_of_start = f"{date} {content.strip()[7:]}"
+                            event["start"] = datetime.strptime(time_of_start, "%Y-%m-%d %H:%M").isoformat()
+                        elif content.lower().startswith("slut:"):
+                            time_of_end: str = f"{date} {content.strip()[6:]}"
+                            event["end"] = datetime.strptime(time_of_end, "%Y-%m-%d %H:%M").isoformat()
+                        elif content.lower().startswith("sista anmdatum"):
+                            deadline_date: str = content.strip()[14:].strip()[2:]
+                            event["deadline"] = datetime.strptime(deadline_date, "%Y-%m-%d").isoformat()
+                        elif content.lower().startswith("typ:"):
+                            event["type"] = content.strip()[5:]
+
+                    match index:
+                        case 0:
+                            result["registered"].append(event)
+                            continue
+                        case 1:
+                            result["available"].append(event)
+                            continue
+                        case 2:
+                            result["upcoming"].append(event)
+                            continue
+                        case 3:
+                            result["missed"].append(event)
+                            continue
+                        case _:
+                            continue
+
+        yield result
