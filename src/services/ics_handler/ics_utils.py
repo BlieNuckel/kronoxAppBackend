@@ -112,12 +112,14 @@ def _parseCompareIcs(ics: bytes, schedule, savedEventsList) -> List[Dict] and Li
         ## less than the length of the new list,
         ## since those events after 'i' are new anyway.
 
-        ## THIS PART IS NOT WORKING
         if i < len(savedEventsList):
             if not equal(events[i], savedEventsList[i]):
                 ## Replace last character in uuid with a '#'
                 events[i]['channel_id'] = str(events[i]['channel_id'])[:-1]+'#'
                 generated_uuids[i] = events[i]['channel_id']
+            else:
+                if str(events[i]['channel_id']).contains('#'):
+                    events[i]['channel_id'] = str(events[i]['channel_id'])[:-1]
 
     """Assign new list of uuid's to cached return value"""
     return events, generated_uuids
@@ -228,4 +230,4 @@ def _saveToCache(id: str, data: Dict, baseUrl: str, startDateTag: StartDateEnum,
     return scheduleJson
 
 def getUniqueScheduleChannelId():
-    return str(random.getrandbits(32))
+    return str(random.getrandbits(16))
