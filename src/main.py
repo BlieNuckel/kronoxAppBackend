@@ -22,6 +22,7 @@ async def scheduleQueryEndpoint(
     month: str | None = Query(None),
     day: str | None = Query(None),
 ) -> Dict:
+    print('MAIN')
     return getSchedules(id, school, startTag=startTag, year=year, month=month, day=day)
 
 
