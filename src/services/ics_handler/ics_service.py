@@ -1,5 +1,5 @@
 import time
-from typing import Dict, List
+from typing import Dict
 
 import src.services.ics_handler.ics_utils as ics_utils
 from src.util.enums import StartDateEnum
@@ -10,7 +10,12 @@ def getIcs(id: str, baseUrl: str, startDate: str = None) -> Dict:
     if not isinstance(icsFile, bytes):
         print("ICS FILE NOT BYTES - ics_service.py:11")
         raise TypeError
+<<<<<<< Updated upstream
     icsList: List[Dict] = ics_utils._parseIcs(icsFile)
+=======
+
+    icsList, uuid_list = ics_utils._parseIcs(icsFile)
+>>>>>>> Stashed changes
     icsDict: Dict = ics_utils._listToJson(icsList)
 
     scheduleObject = {}
@@ -19,6 +24,10 @@ def getIcs(id: str, baseUrl: str, startDate: str = None) -> Dict:
     scheduleObject["baseUrl"] = baseUrl
     scheduleObject["schedule"] = icsDict
     scheduleObject["startsAt"] = startDate
+<<<<<<< Updated upstream
+=======
+    scheduleObject["generated_uuids"] = uuid_list
+>>>>>>> Stashed changes
 
     return scheduleObject
 

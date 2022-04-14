@@ -16,7 +16,6 @@ class UnregisterSpider(LoginSpider):
                 -H 'accept: text/html, */*; q=0.01'
                 -H 'accept-language: en-DK,en-US;q=0.9,en;q=0.8,sv;q=0.7,nl;q=0.6'
                 -H 'referer: https://{self.baseUrl}/aktivitetsanmalan.jsp?'
-                -H 'sec-ch-ua: " Not A;Brand";v="99", "Chromium";v="100", "Google Chrome";v="100"'
                 -H 'sec-ch-ua-mobile: ?0'
                 -H 'sec-ch-ua-platform: "Windows"'
                 -H 'sec-fetch-dest: empty'
@@ -25,6 +24,5 @@ class UnregisterSpider(LoginSpider):
                 -H 'user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.88 Safari/537.36'
                 -H 'x-requested-with: XMLHttpRequest'
                 --compressed
-            """,  # noqa
-            callback=self.parse,
+            """  # noqa
         )

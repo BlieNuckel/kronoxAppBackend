@@ -3,6 +3,8 @@ from scrapy.spiders.init import InitSpider
 from scrapy import Request
 from scrapy.responsetypes import Response
 
+from src.exceptions.login_exceptions import LoginException
+
 
 class LoginSpider(InitSpider):
     name = "login"
@@ -25,7 +27,6 @@ class LoginSpider(InitSpider):
                     -H "content-type: application/x-www-form-urlencoded"
                     -H "origin: https://{self.baseUrl}"
                     -H "referer: https://{self.baseUrl}/index.jsp"
-                    -H "sec-ch-ua: "Not A;Brand";v="99", "Chromium";v="100", "Google Chrome";v="100""
                     -H "sec-ch-ua-mobile: ?0"
                     -H "sec-ch-ua-platform: "Windows""
                     -H "sec-fetch-dest: document"
@@ -37,9 +38,18 @@ class LoginSpider(InitSpider):
                     --data-raw "username={quote(self.username)}&password={quote(self.password)}"
                     --compressed
                 """,  # noqa
-                callback=self.onLoggedIn,
+                callback=self.loginCheck,
             )
         ]
 
+    def loginCheck(self, response: Response):
+        try:
+            if response.selector.css(".title::text").get().lower() == "inloggning misslyckades":
+                return {"error": LoginException}
+        except AttributeError:
+            pass
+
+        return self.onLoggedIn(response)
+
     def parse(self, response: Response):
-        print(response.text)
+        pass
