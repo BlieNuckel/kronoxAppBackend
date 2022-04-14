@@ -1,16 +1,20 @@
+from types import FunctionType
 from urllib.parse import quote
 from scrapy.spiders.init import InitSpider
 from scrapy import Request
 from scrapy.responsetypes import Response
 
+from src.exceptions.login_exceptions import LoginException
+
 
 class LoginSpider(InitSpider):
     name = "login"
 
-    def __init__(self, baseUrl: str, username: str, password: str):
+    def __init__(self, baseUrl: str, username: str, password: str, errCallback: FunctionType):
         self.baseUrl = baseUrl
         self.username = username
         self.password = password
+        self.errCallback = errCallback
         super().__init__(self.name)
 
     def start_requests(self):
@@ -37,9 +41,16 @@ class LoginSpider(InitSpider):
                     --data-raw "username={quote(self.username)}&password={quote(self.password)}"
                     --compressed
                 """,  # noqa
-                callback=self.onLoggedIn,
+                callback=self.loginCheck,
+                errback=self.errCallback,
             )
         ]
+
+    def loginCheck(self, response: Response):
+        if response.selector.css(".title::text").get().lower() == "inloggning misslyckades":
+            raise LoginException
+
+        return self.onLoggedIn(response)
 
     def parse(self, response: Response):
         print(response.text)
