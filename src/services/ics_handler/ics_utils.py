@@ -114,11 +114,13 @@ def _parseCompareIcs(ics: bytes, schedule, savedEventsList) -> List[Dict] and Li
 
         if i < len(savedEventsList):
             if not equal(events[i], savedEventsList[i]):
+                print(events[i]['channel_id'])
                 ## Replace last character in uuid with a '#'
-                generated_uuids[i] = str(events[i]['channel_id'])+'#'
+                generated_uuids[generated_uuids.index(str(events[i]['channel_id']))] = str(events[i]['channel_id'])+'#'
             else:
-                if str(events[i]['channel_id']).contains('#'):
-                    generated_uuids[i]['channel_id'] = str(events[i]['channel_id'])[:-1]
+                if '#' in str(events[i]['channel_id']):
+                    print(events[i]['channel_id'])
+                    generated_uuids[generated_uuids.index(str(events[i]['channel_id']))] = str(events[i]['channel_id'])[:-1]
 
     """Assign new list of uuid's to cached return value"""
     return events, generated_uuids
